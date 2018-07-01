@@ -169,15 +169,15 @@ def build_model(
 
   def build_neural_net(features, dropout_rate):
     # Convolutional Layer 1.
-    filter_size1 = 2          # Convolution filters are 5 x 5 pixels.
+    filter_size1 = 5          # Convolution filters are 5 x 5 pixels.
     num_filters1 = 16         # There are 16 of these filters.
 
     # Convolutional Layer 2.
-    filter_size2 = 4          # Convolution filters are 5 x 5 pixels.
-    num_filters2 = 32         # There are 36 of these filters.
+    filter_size2 = 5          # Convolution filters are 5 x 5 pixels.
+    num_filters2 = 36         # There are 36 of these filters.
 
     # Fully-connected layer.
-    fc_size = 512
+    fc_size = num_classes * 64
 
     data = features['x']
 
@@ -230,7 +230,7 @@ def build_model(
 
 
   def model_fn(features, labels, mode):
-    print("In model_fn", labels)
+    print("In model_fn with mode", mode)
     d_rate = dropout_rate
     if mode in set([tf.estimator.ModeKeys.PREDICT, tf.estimator.ModeKeys.EVAL]):
       d_rate = 0.00000001
@@ -276,20 +276,12 @@ def build_model(
       output_dir='logdir',
       summary_op=tf.summary.merge_all())
 
-    # if mode == tf.estimator.ModeKeys.PREDICT:
-    #  print("Running predict")
-    #  predictions = {
-    #    'class_ids': pred_classes[:, tf.newaxis],
-    #    'probabilities': tf.nn.softmax(logits),
-    #    'logits': logits,
-    #  }
-    #  return tf.estimator.EstimatorSpec(mode, predictions=predictions)
-
     # If running in eval mode, we can stop here.
     if mode == tf.estimator.ModeKeys.EVAL:
       return tf.estimator.EstimatorSpec(
           mode=mode,
           predictions=pred_classes,
+          loss=loss_op,
           evaluation_hooks=[summary_hook],
           eval_metric_ops={'accuracy': accuracy_op})
 

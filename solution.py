@@ -9,12 +9,12 @@ ds_config = DataSetConfig(
     num_channels=3,
     batch_size=8,
     image_size=(64, 64),
-    expansion_factor=10,
+    expansion_factor=5,
     random_seed=3171945)
 
 data_set = DataSet(
-    name="simple",
-    path=common.DATA_SIMPLE_DIR,
+    name="common-6",
+    path=common.DATA_COMMON_6_DIR,
     config=ds_config)
 
 num_classes = data_set.num_classes
@@ -25,4 +25,4 @@ model = build_model(
     ds_config,
     num_classes=num_classes,
     learning_rate=0.01,
-    momentum=0.7)
+    momentum=0.4)
