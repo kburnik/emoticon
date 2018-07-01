@@ -18,6 +18,11 @@ class LabelSet:
   def __init__(self, path):
     self.path = path
 
+  @property
+  def size(self):
+    """Number of distinct labels."""
+    return len(self.labels())
+
   def labels(self):
     """Returns the list of Label objects."""
     return list(self._enumerate())

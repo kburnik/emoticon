@@ -15,3 +15,8 @@ DATA_RAW_DIR = os.path.join(DATA_ROOT_DIR, "raw")
 DATA_DUMMY_DIR = os.path.join(DATA_ROOT_DIR, "dummy")
 """Picked out images for sanity checking - debugging."""
 
+DATA_SIMPLE_DIR = os.path.join(DATA_ROOT_DIR, "simple")
+"""Picked out images for a simple data set - debugging."""
+
+MODEL_SAVE_DIR = os.path.join(ROOT_DIR, ".model")
+"""Directory where the models are cached."""

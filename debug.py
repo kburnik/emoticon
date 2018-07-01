@@ -33,4 +33,3 @@ if __name__ == '__main__':
   print(train.name, train.labels())
   print(test.name, test.labels())
 
-
