@@ -230,6 +230,7 @@ def build_model(
 
 
   def model_fn(features, labels, mode):
+    print("In model_fn", labels)
     d_rate = dropout_rate
     if mode in set([tf.estimator.ModeKeys.PREDICT, tf.estimator.ModeKeys.EVAL]):
       d_rate = 0.00000001
@@ -242,11 +243,18 @@ def build_model(
       # Predictions.
       pred_classes = tf.argmax(logits, axis=1)
 
+    # In prediction mode we can return the model with predictions.
+    if mode == tf.estimator.ModeKeys.PREDICT:
+      return tf.estimator.EstimatorSpec(
+          mode=mode,
+          predictions=pred_classes)
+
     # Define the loss operation.
     with tf.name_scope('Loss'):
-      loss_op = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(
-          logits=logits, labels=labels))
-
+      loss_op = tf.reduce_mean(
+          tf.nn.sparse_softmax_cross_entropy_with_logits(
+              logits=logits,
+              labels=labels))
 
       regularizers = (tf.nn.l2_loss(fc1_weights) + tf.nn.l2_loss(fc1_biases) +
                     tf.nn.l2_loss(fc2_weights) + tf.nn.l2_loss(fc2_biases))
@@ -268,12 +276,20 @@ def build_model(
       output_dir='logdir',
       summary_op=tf.summary.merge_all())
 
-    # If running in prediction mode, we can stop here.
-    if mode in set([tf.estimator.ModeKeys.PREDICT, tf.estimator.ModeKeys.EVAL]):
+    # if mode == tf.estimator.ModeKeys.PREDICT:
+    #  print("Running predict")
+    #  predictions = {
+    #    'class_ids': pred_classes[:, tf.newaxis],
+    #    'probabilities': tf.nn.softmax(logits),
+    #    'logits': logits,
+    #  }
+    #  return tf.estimator.EstimatorSpec(mode, predictions=predictions)
+
+    # If running in eval mode, we can stop here.
+    if mode == tf.estimator.ModeKeys.EVAL:
       return tf.estimator.EstimatorSpec(
           mode=mode,
           predictions=pred_classes,
-          loss=loss_op,
           evaluation_hooks=[summary_hook],
           eval_metric_ops={'accuracy': accuracy_op})
 
