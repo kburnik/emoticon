@@ -184,14 +184,14 @@ def build_model(
     # Convolutional Layer 2.
     filter_size2 = 4          # Convolution filters are 5 x 5 pixels.
     num_filters2 = 36         # There are 36 of these filters.
-    filter_stride2 = 2
+    filter_stride2 = 1
     pool_stride2 = 2
 
     # Convolutional Layer 3.
-    filter_size3 = 8
-    num_filters3 = 48
-    filter_stride3 = 4
-    pool_stride3 = 4
+    filter_size3 = 2
+    num_filters3 = 36
+    filter_stride3 = 2
+    pool_stride3 = 1
 
     # Fully-connected layers.
     fc1_size = num_classes * 64

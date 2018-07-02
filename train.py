@@ -1,16 +1,16 @@
-from solution import data_set
 from solution import data
-from solution import train_expanded
-from solution import test
+from solution import data_set
 from solution import model
+from solution import test
+from solution import train_expanded
 
 print("Data shape", data.images().shape)
 print("Num classes", data_set.num_classes)
-print("Train size", train.size)
+print("Train size", train_expanded.size)
 print("Test size", test.size)
 
 while True:
-  model.train(train_expanded.input_fn(), steps=1000)
+  model.train(train_expanded.input_fn(), steps=100)
 
   train_eval = model.evaluate(train_expanded.input_fn())
   print("Train accuracy", train_eval['accuracy'])
