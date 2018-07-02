@@ -1,3 +1,7 @@
+"""
+Loads the bootstrapped solution and runs the prediction test with visualization.
+"""
+
 from solution import num_classes
 from solution import test
 from solution import train
@@ -7,6 +11,7 @@ import matplotlib.pyplot as plt
 import math
 
 def plot_images(data, num_classes, cls_pred=None):
+  """Draws a plot with images. Optionally can display prediction results too."""
   images = data.images()
   cls_true = data.labels()
   grid_size = math.ceil(math.sqrt(data.size))
@@ -14,7 +19,6 @@ def plot_images(data, num_classes, cls_pred=None):
   rows = grid_size
   cols = math.ceil(float(data.size) / grid_size)
 
-  # Create figure with 3x3 sub-plots.
   fig, axes = plt.subplots(rows, cols)
   fig.subplots_adjust(hspace=1, wspace=0.3)
 
@@ -23,7 +27,6 @@ def plot_images(data, num_classes, cls_pred=None):
       ax.axis('off')
       continue
 
-    # Plot image.
     ax.imshow(
         images[i],
         cmap='binary')
@@ -47,8 +50,6 @@ def plot_images(data, num_classes, cls_pred=None):
     ax.set_xticks([])
     ax.set_yticks([])
 
-  # Ensure the plot is shown correctly with multiple plots
-  # in a single Notebook cell.
   plt.show()
 
 

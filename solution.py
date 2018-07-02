@@ -1,3 +1,8 @@
+"""
+Bootstraps and configures the input data and the model for use in actionable
+code: training, evaluation and prediction.
+"""
+
 from dataset import DataSet
 from dataset import DataSetConfig
 from expander import expander
@@ -5,11 +10,10 @@ from model import build_model
 import common
 
 ds_config = DataSetConfig(
-    max_labels=6,
     num_channels=3,
     batch_size=12,
     image_size=(64, 64),
-    expansion_factor=100,
+    expansion_factor=20,
     random_seed=271941)
 
 data_set = DataSet(

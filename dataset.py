@@ -1,3 +1,8 @@
+"""
+Provides loading of discrete-classed image data sets, transformations and
+curating.
+"""
+
 from functools import lru_cache
 from glob import glob
 from image import Image
@@ -17,13 +22,11 @@ class DataSetConfig:
   """Encapsulates the configuration of a dataset."""
   def __init__(
       self,
-      max_labels=6,
       num_channels=3,
       batch_size=8,
       image_size=(32, 32),
       expansion_factor=10,
       random_seed=None):
-    self.max_labels = max_labels
     self.num_channels = num_channels
     self.batch_size = batch_size
     self.image_size = image_size

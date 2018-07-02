@@ -1,3 +1,7 @@
+"""
+Loads the bootstrapped solution and runs the training.
+"""
+
 from solution import data
 from solution import data_set
 from solution import model

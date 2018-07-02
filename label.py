@@ -1,3 +1,6 @@
+"""
+Provides classes for working with data set labels.
+"""
 from glob import glob
 from os.path import join
 from os.path import basename
