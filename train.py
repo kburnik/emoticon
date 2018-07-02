@@ -2,11 +2,14 @@
 Loads the bootstrapped solution and runs the training.
 """
 
+from expander import expander
 from solution import data
 from solution import data_set
 from solution import model
 from solution import test
-from solution import train_expanded
+from solution import train
+
+train_expanded = train.expanded(expander).shuffled()
 
 print("Data shape", data.images().shape)
 print("Num classes", data_set.num_classes)

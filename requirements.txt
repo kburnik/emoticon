@@ -1,4 +1,7 @@
-Pillow
-numpy
 matplotlib
+numpy
+Pillow
+scipy
 tensorflow
+opencv-python
+

@@ -17,21 +17,19 @@ ds_config = DataSetConfig(
     random_seed=271941)
 
 data_set = DataSet(
-    name="common-6",
-    path=common.DATA_COMMON_6_DIR,
+    name="dataset",
+    path=common.DATA_COMMON_6_GRAYSCALE_DIR,
     config=ds_config)
 
 num_classes = data_set.num_classes
 
 data = data_set.data().shuffled()
 
-train, test = data.split(0.6, names=["train", "test"])
-
-train_expanded = train.expanded(expander).shuffled()
+train, test = data.split(0.7, names=["train", "test"])
 
 model = build_model(
     ds_config,
     num_classes=num_classes,
     use_dropout=False,
-    learning_rate=0.005,
-    momentum=0.7)
+    learning_rate=0.01,
+    momentum=0.6)

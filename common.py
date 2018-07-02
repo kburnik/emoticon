@@ -21,5 +21,8 @@ DATA_SIMPLE_DIR = os.path.join(DATA_ROOT_DIR, "simple")
 DATA_COMMON_6_DIR = os.path.join(DATA_ROOT_DIR, "common-6")
 """Picked out images for common emoticons."""
 
+DATA_COMMON_6_GRAYSCALE_DIR = os.path.join(DATA_ROOT_DIR, "common-6-grayscale")
+"""Picked out images for common emoticons (grayscale)."""
+
 MODEL_SAVE_DIR = os.path.join(ROOT_DIR, ".model")
 """Directory where the models are cached."""
