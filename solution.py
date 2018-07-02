@@ -9,7 +9,7 @@ ds_config = DataSetConfig(
     num_channels=3,
     batch_size=12,
     image_size=(64, 64),
-    expansion_factor=10,
+    expansion_factor=25,
     random_seed=3171945)
 
 data_set = DataSet(
@@ -23,7 +23,7 @@ data = data_set.data().shuffled()
 
 train, test = data.split(0.6, names=["train", "test"])
 
-train = train.expanded(expander).shuffled()
+train_expanded = train.expanded(expander).shuffled()
 
 model = build_model(
     ds_config,

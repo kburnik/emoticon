@@ -1,11 +1,12 @@
 from solution import num_classes
 from solution import test
+from solution import train
 from solution import ds_config
 from solution import model
 import matplotlib.pyplot as plt
 import math
 
-def plot_images(data, num_classes, cls_pred):
+def plot_images(data, num_classes, cls_pred=None):
   images = data.images()
   cls_true = data.labels()
   grid_size = math.ceil(math.sqrt(data.size))
@@ -28,11 +29,15 @@ def plot_images(data, num_classes, cls_pred):
         cmap='binary')
 
     # Show true and predicted classes.
-    xlabel = "T: {0}, P: {1}".format(cls_true[i], cls_pred[i])
-    if cls_true[i] == cls_pred[i]:
-      color = "green"
+    if cls_pred:
+      xlabel = "T: {0}, P: {1}".format(cls_true[i], cls_pred[i])
+      if cls_true[i] == cls_pred[i]:
+        color = "green"
+      else:
+        color = "red"
     else:
-      color = "red"
+      xlabel = str(cls_true[i])
+      color = "gray"
 
     # Show the classes as the label on the x-axis.
     ax.set_xlabel(xlabel)
@@ -48,4 +53,5 @@ def plot_images(data, num_classes, cls_pred):
 
 
 predictions = list(model.predict(test.predict_input_fn()))
-plot_images(test, num_classes, predictions)
+plot_images(train.sorted(), num_classes)
+plot_images(test.sorted(), num_classes, predictions)
