@@ -49,7 +49,10 @@ def new_conv_layer(
     num_filters,        # Number of filters.
     use_pooling=True,   # Use 2x2 max-pooling.
     filter_stride=1,
-    pool_stride=1):
+    pool_stride=1,
+    use_dropout=True,
+    dropout_rate=0.5,
+    random_seed=None):
 
   # Shape of the filter-weights for the convolution.
   # This format is determined by the TensorFlow API.
@@ -96,6 +99,9 @@ def new_conv_layer(
   # This adds some non-linearity to the formula and allows us
   # to learn more complicated functions.
   layer = tf.nn.relu(layer)
+
+  if use_dropout:
+    layer = tf.nn.dropout(layer, dropout_rate, seed=random_seed)
 
   # Note that ReLU is normally executed before the pooling,
   # but since relu(max_pool(x)) == max_pool(relu(x)) we can
@@ -159,17 +165,16 @@ def build_model(
     num_classes,
     learning_rate=0.1,
     momentum=0.9,
-    dropout_mode=DropoutMode.NONE,
+    use_pooling=True,
+    use_dropout=False,
     dropout_rate=0.1,
-    activation_mode=ActivationMode.RELU6,
-    use_bias=True,
     debug=noop,
     save_dir=MODEL_SAVE_DIR):
   num_channels = ds_config.num_channels
   image_size = ds_config.image_size
   random_seed = ds_config.random_seed
 
-  def build_neural_net(features, dropout_rate):
+  def build_neural_net(features):
     # Convolutional Layer 1.
     filter_size1 = 4          # Convolution filters are 5 x 5 pixels.
     num_filters1 = 16         # There are 16 of these filters.
@@ -205,9 +210,12 @@ def build_model(
           num_input_channels=num_channels,
           filter_size=filter_size1,
           num_filters=num_filters1,
-          use_pooling=True,
+          use_pooling=use_pooling,
           filter_stride=filter_stride1,
-          pool_stride=pool_stride1)
+          pool_stride=pool_stride1,
+          use_dropout=use_dropout,
+          dropout_rate=dropout_rate,
+          random_seed=random_seed)
       debug("conv1 shape", conv1_layer.shape)
 
     with tf.name_scope("Convolutional-2"):
@@ -216,9 +224,11 @@ def build_model(
           num_input_channels=num_filters1,
           filter_size=filter_size2,
           num_filters=num_filters2,
-          use_pooling=True,
+          use_pooling=use_pooling,
           filter_stride=filter_stride2,
-          pool_stride=pool_stride2)
+          pool_stride=pool_stride2,
+          use_dropout=False,
+          random_seed=random_seed)
       debug("conv2 shape", conv2_layer.shape)
 
     with tf.name_scope("Convolutional-3"):
@@ -227,9 +237,11 @@ def build_model(
           num_input_channels=num_filters2,
           filter_size=filter_size3,
           num_filters=num_filters3,
-          use_pooling=True,
+          use_pooling=use_pooling,
           filter_stride=filter_stride3,
-          pool_stride=pool_stride3)
+          pool_stride=pool_stride3,
+          use_dropout=False,
+          random_seed=random_seed)
       debug("conv3 shape", conv3_layer.shape)
 
     with tf.name_scope("Flat-Tier"):
@@ -271,16 +283,12 @@ def build_model(
 
 
   def model_fn(features, labels, mode):
-    d_rate = dropout_rate
-    if mode in set([tf.estimator.ModeKeys.PREDICT, tf.estimator.ModeKeys.EVAL]):
-      d_rate = 0.00000001
-
     # Build the neural network.
     with tf.name_scope('Model'):
       logits, \
           fc1_weights, fc1_biases, \
           fc2_weights, fc2_biases, \
-          fc3_weights, fc3_biases = build_neural_net(features, d_rate)
+          fc3_weights, fc3_biases = build_neural_net(features)
 
       # Predictions.
       pred_classes = tf.argmax(logits, axis=1)

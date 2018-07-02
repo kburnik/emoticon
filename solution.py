@@ -28,5 +28,6 @@ train = train.expanded(expander).shuffled()
 model = build_model(
     ds_config,
     num_classes=num_classes,
+    use_dropout=False,
     learning_rate=0.005,
     momentum=0.7)
