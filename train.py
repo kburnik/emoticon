@@ -13,10 +13,11 @@ while True:
   model.train(train_expanded.input_fn(), steps=100)
 
   train_eval = model.evaluate(train_expanded.input_fn())
-  print("Train accuracy", train_eval['accuracy'])
-
   test_eval = model.evaluate(test.input_fn())
-  print("Test accuracy", test_eval['accuracy'])
+  print(
+      "Accuracy: train [ %.2f ] test [ %.2f ]" % (
+      train_eval['accuracy'],
+      test_eval['accuracy']))
 
   if train_eval['accuracy'] > 0.95:
     break
