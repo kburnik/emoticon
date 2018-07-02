@@ -43,11 +43,13 @@ def new_biases(length):
 
 
 def new_conv_layer(
-    input,        # The previous layer.
+    input,              # The previous layer.
     num_input_channels, # Num. channels in prev. layer.
-    filter_size,    # Width and height of each filter.
-    num_filters,    # Number of filters.
-    use_pooling=True):  # Use 2x2 max-pooling.
+    filter_size,        # Width and height of each filter.
+    num_filters,        # Number of filters.
+    use_pooling=True,   # Use 2x2 max-pooling.
+    filter_stride=1,
+    pool_stride=1):
 
   # Shape of the filter-weights for the convolution.
   # This format is determined by the TensorFlow API.
@@ -71,7 +73,7 @@ def new_conv_layer(
   layer = tf.nn.conv2d(
       input=input,
       filter=weights,
-      strides=[1, 1, 1, 1],
+      strides=[1, filter_stride, filter_stride, 1],
       padding='SAME')
 
   # Add the biases to the results of the convolution.
@@ -85,8 +87,8 @@ def new_conv_layer(
     # in each window. Then we move 2 pixels to the next window.
     layer = tf.nn.max_pool(
         value=layer,
-        ksize=[1, 2, 2, 1],
-        strides=[1, 2, 2, 1],
+        ksize=[1, pool_stride, pool_stride, 1],
+        strides=[1, pool_stride, pool_stride, 1],
         padding='SAME')
 
   # Rectified Linear Unit (ReLU).
@@ -169,15 +171,26 @@ def build_model(
 
   def build_neural_net(features, dropout_rate):
     # Convolutional Layer 1.
-    filter_size1 = 5          # Convolution filters are 5 x 5 pixels.
+    filter_size1 = 4          # Convolution filters are 5 x 5 pixels.
     num_filters1 = 16         # There are 16 of these filters.
+    filter_stride1 = 1
+    pool_stride1 = 2
 
     # Convolutional Layer 2.
-    filter_size2 = 5          # Convolution filters are 5 x 5 pixels.
+    filter_size2 = 4          # Convolution filters are 5 x 5 pixels.
     num_filters2 = 36         # There are 36 of these filters.
+    filter_stride2 = 2
+    pool_stride2 = 2
 
-    # Fully-connected layer.
-    fc_size = num_classes * 64
+    # Convolutional Layer 3.
+    filter_size3 = 8
+    num_filters3 = 48
+    filter_stride3 = 4
+    pool_stride3 = 4
+
+    # Fully-connected layers.
+    fc1_size = num_classes * 64
+    fc2_size = num_classes * 16
 
     data = features['x']
 
@@ -186,59 +199,88 @@ def build_model(
           data, [-1, image_size[1], image_size[0], num_channels])
       tf.summary.image("Sample image", x_image)
 
-    with tf.name_scope("Tier1"):
+    with tf.name_scope("Convolutional-1"):
       conv1_layer, conv1_weights, conv1_biases = new_conv_layer(
           input=x_image,
           num_input_channels=num_channels,
           filter_size=filter_size1,
           num_filters=num_filters1,
-          use_pooling=True)
+          use_pooling=True,
+          filter_stride=filter_stride1,
+          pool_stride=pool_stride1)
       debug("conv1 shape", conv1_layer.shape)
 
-    with tf.name_scope("Tier2"):
+    with tf.name_scope("Convolutional-2"):
       conv2_layer, conv2_weights, conv2_biases = new_conv_layer(
           input=conv1_layer,
           num_input_channels=num_filters1,
           filter_size=filter_size2,
           num_filters=num_filters2,
-          use_pooling=True)
+          use_pooling=True,
+          filter_stride=filter_stride2,
+          pool_stride=pool_stride2)
       debug("conv2 shape", conv2_layer.shape)
 
-    with tf.name_scope("Tier3"):
-      flat_layer, num_features = flatten_layer(conv2_layer)
+    with tf.name_scope("Convolutional-3"):
+      conv3_layer, conv3_weights, conv3_biases = new_conv_layer(
+          input=conv2_layer,
+          num_input_channels=num_filters2,
+          filter_size=filter_size3,
+          num_filters=num_filters3,
+          use_pooling=True,
+          filter_stride=filter_stride3,
+          pool_stride=pool_stride3)
+      debug("conv3 shape", conv3_layer.shape)
+
+    with tf.name_scope("Flat-Tier"):
+      flat_layer, num_features = flatten_layer(conv3_layer)
       debug("flat shape", flat_layer.shape)
 
-    with tf.name_scope("Tier4"):
+    with tf.name_scope("Fully-connected-1"):
       fc1_layer, fc1_weights, fc1_biases = new_fc_layer(
           input=flat_layer,
           num_inputs=num_features,
-          num_outputs=fc_size,
+          num_outputs=fc1_size,
           use_relu=True)
       debug("fc1_layer shape", fc1_layer.shape)
 
-    with tf.name_scope("Tier5"):
+    with tf.name_scope("Fully-connected-2"):
       fc2_layer, fc2_weights, fc2_biases = new_fc_layer(
           input=fc1_layer,
-          num_inputs=fc_size,
-          num_outputs=num_classes,
+          num_inputs=fc1_size,
+          num_outputs=fc2_size,
           use_relu=False)
       debug("fc2_layer shape", fc2_layer.shape)
 
+    with tf.name_scope("Fully-connected-3"):
+      fc3_layer, fc3_weights, fc3_biases = new_fc_layer(
+          input=fc2_layer,
+          num_inputs=fc2_size,
+          num_outputs=num_classes,
+          use_relu=False)
+      debug("fc3_layer shape", fc3_layer.shape)
+
     logits = fc2_layer
 
-    return logits, fc1_weights, fc1_biases, fc2_weights, fc2_biases
+    return (
+        logits,
+        fc1_weights, fc1_biases,
+        fc2_weights, fc2_biases,
+        fc3_weights, fc3_biases
+        )
 
 
   def model_fn(features, labels, mode):
-    print("In model_fn with mode", mode)
     d_rate = dropout_rate
     if mode in set([tf.estimator.ModeKeys.PREDICT, tf.estimator.ModeKeys.EVAL]):
       d_rate = 0.00000001
 
     # Build the neural network.
     with tf.name_scope('Model'):
-      logits, fc1_weights, fc1_biases, fc2_weights, fc2_biases = (
-          build_neural_net(features, d_rate))
+      logits, \
+          fc1_weights, fc1_biases, \
+          fc2_weights, fc2_biases, \
+          fc3_weights, fc3_biases = build_neural_net(features, d_rate)
 
       # Predictions.
       pred_classes = tf.argmax(logits, axis=1)
@@ -256,8 +298,11 @@ def build_model(
               logits=logits,
               labels=labels))
 
-      regularizers = (tf.nn.l2_loss(fc1_weights) + tf.nn.l2_loss(fc1_biases) +
-                    tf.nn.l2_loss(fc2_weights) + tf.nn.l2_loss(fc2_biases))
+      regularizers = (
+          tf.nn.l2_loss(fc1_weights) + tf.nn.l2_loss(fc1_biases) +
+          tf.nn.l2_loss(fc2_weights) + tf.nn.l2_loss(fc2_biases) +
+          tf.nn.l2_loss(fc3_weights) + tf.nn.l2_loss(fc3_biases)
+          )
 
       # Add the regularization term to the loss.
       loss_op += 5e-4 * regularizers

@@ -7,9 +7,9 @@ import common
 ds_config = DataSetConfig(
     max_labels=6,
     num_channels=3,
-    batch_size=8,
+    batch_size=12,
     image_size=(64, 64),
-    expansion_factor=5,
+    expansion_factor=10,
     random_seed=3171945)
 
 data_set = DataSet(
@@ -21,8 +21,12 @@ num_classes = data_set.num_classes
 
 data = data_set.data().shuffled()
 
+train, test = data.split(0.6, names=["train", "test"])
+
+train = train.expanded(expander).shuffled()
+
 model = build_model(
     ds_config,
     num_classes=num_classes,
-    learning_rate=0.01,
-    momentum=0.4)
+    learning_rate=0.005,
+    momentum=0.7)

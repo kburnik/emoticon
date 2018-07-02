@@ -1,5 +1,5 @@
 from solution import num_classes
-from solution import data
+from solution import test
 from solution import ds_config
 from solution import model
 import matplotlib.pyplot as plt
@@ -28,11 +28,10 @@ def plot_images(data, num_classes, cls_pred):
         cmap='binary')
 
     # Show true and predicted classes.
+    xlabel = "T: {0}, P: {1}".format(cls_true[i], cls_pred[i])
     if cls_true[i] == cls_pred[i]:
-      xlabel = "Correct"
       color = "green"
     else:
-      xlabel = "True: {0}, Pred: {1}".format(cls_true[i], cls_pred[i])
       color = "red"
 
     # Show the classes as the label on the x-axis.
@@ -48,5 +47,5 @@ def plot_images(data, num_classes, cls_pred):
   plt.show()
 
 
-predictions = list(model.predict(data.predict_input_fn()))
-plot_images(data, num_classes, predictions)
+predictions = list(model.predict(test.predict_input_fn()))
+plot_images(test, num_classes, predictions)

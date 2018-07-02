@@ -23,7 +23,7 @@ def translate(image):
 
 
 def rotate(image):
-  rot = image.rotate(rand_offset(25), expand=1)
+  rot = image.convert('RGBA').rotate(rand_offset(15), expand=1)
   fff = PilImage.new('RGBA', rot.size, (255,)*4)
   return PilImage.composite(rot, fff, rot)
 
@@ -32,7 +32,7 @@ def expander(sample, factor):
   image, label = sample
 
   for i in range(factor):
-    new_image = image.transformed(translate)
+    new_image = image.transformed(translate).transformed(rotate)
     # new_image.image.show()
     # input("next? ")
     yield (new_image, label)
