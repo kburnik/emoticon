@@ -9,7 +9,7 @@ ds_config = DataSetConfig(
     num_channels=3,
     batch_size=12,
     image_size=(64, 64),
-    expansion_factor=20,
+    expansion_factor=10,
     random_seed=3171945)
 
 data_set = DataSet(

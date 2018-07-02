@@ -141,7 +141,10 @@ def new_fc_layer(
     input,          # The previous layer.
     num_inputs,     # Num. inputs from prev. layer.
     num_outputs,    # Num. outputs.
-    use_relu=True): # Use Rectified Linear Unit (ReLU)?
+    use_relu=True,
+    use_dropout=False,
+    dropout_rate=0.5,
+    random_seed=None): # Use Rectified Linear Unit (ReLU)?
 
   # Create new weights and biases.
   weights = new_weights(shape=[num_inputs, num_outputs])
@@ -155,6 +158,13 @@ def new_fc_layer(
   if use_relu:
     layer = tf.nn.relu(layer)
 
+  if use_dropout:
+    layer = tf.nn.dropout(
+        layer,
+        dropout_rate,
+        seed=random_seed,
+        name="dropout")
+
   return layer, weights, biases
 
 def noop(*args):
@@ -167,7 +177,7 @@ def build_model(
     momentum=0.9,
     use_pooling=True,
     use_dropout=False,
-    dropout_rate=0.1,
+    dropout_rate=0.5,
     debug=noop,
     save_dir=MODEL_SAVE_DIR):
   num_channels = ds_config.num_channels
@@ -213,8 +223,7 @@ def build_model(
           use_pooling=use_pooling,
           filter_stride=filter_stride1,
           pool_stride=pool_stride1,
-          use_dropout=use_dropout,
-          dropout_rate=dropout_rate,
+          use_dropout=False,
           random_seed=random_seed)
       debug("conv1 shape", conv1_layer.shape)
 
@@ -253,7 +262,8 @@ def build_model(
           input=flat_layer,
           num_inputs=num_features,
           num_outputs=fc1_size,
-          use_relu=True)
+          use_relu=True,
+          use_dropout=False)
       debug("fc1_layer shape", fc1_layer.shape)
 
     with tf.name_scope("Fully-connected-2"):
@@ -261,7 +271,8 @@ def build_model(
           input=fc1_layer,
           num_inputs=fc1_size,
           num_outputs=fc2_size,
-          use_relu=False)
+          use_relu=True,
+          use_dropout=False)
       debug("fc2_layer shape", fc2_layer.shape)
 
     with tf.name_scope("Fully-connected-3"):

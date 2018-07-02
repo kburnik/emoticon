@@ -18,5 +18,5 @@ while True:
   test_eval = model.evaluate(test.input_fn())
   print("Test accuracy", test_eval['accuracy'])
 
-  if train_eval['accuracy'] > 0.98:
+  if train_eval['accuracy'] > 0.95:
     break
