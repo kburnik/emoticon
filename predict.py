@@ -36,6 +36,7 @@ def plot_images(data, num_classes, cls_pred=None):
       xlabel = "T: {0}, P: {1}".format(cls_true[i], cls_pred[i])
       if cls_true[i] == cls_pred[i]:
         color = "green"
+        xlabel = "OK"
       else:
         color = "red"
     else:
@@ -52,13 +53,15 @@ def plot_images(data, num_classes, cls_pred=None):
 
   plt.show()
 
+sorted_train = train.sorted()
+sorted_test = test.sorted()
 
 plot_images(
-    train.sorted(),
+    sorted_train.sorted(),
     num_classes,
-    list(model.predict(train.predict_input_fn())))
+    list(model.predict(sorted_train.input_fn())))
 
 plot_images(
-    test.sorted(),
+    sorted_test,
     num_classes,
-    list(model.predict(test.predict_input_fn())))
+    list(model.predict(sorted_test.input_fn())))
