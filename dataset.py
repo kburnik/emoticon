@@ -56,7 +56,9 @@ class Data:
 
   def sorted(self):
     """Returns a new Data object with samples sorted by the label index."""
-    new_samples = list(sorted(self.samples, key=lambda sample: sample[1].index))
+    new_samples = list(sorted(
+        self.samples[:],
+        key=lambda sample: (sample[1].index, sample[0].name)))
     return self._new(new_samples)
 
   def expanded(self, expander_fn):
@@ -114,13 +116,6 @@ class Data:
         num_epochs=1,
         shuffle=False)
 
-  def predict_input_fn(self):
-    """Returns the TF input node for the data for prediction."""
-    return tf.estimator.inputs.numpy_input_fn(
-        x={'x': self.images()},
-        num_epochs=1,
-        shuffle=False)
-
   def normalize(self, image):
     """Normalizes the image from 0-255 to 0-1 range."""
     return (image.astype(float) / 256.0)
@@ -128,7 +123,7 @@ class Data:
   def show(self):
     """Displays the data images and labels."""
     # TODO: labels!
-    cols = 12
+    cols = self.config.expansion_factor
     rows = math.ceil(float(self.size) / cols)
     image_size = self.config.image_size
     canvas_size = (image_size[0] * cols, image_size[1] * rows)

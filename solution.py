@@ -11,9 +11,9 @@ import common
 
 ds_config = DataSetConfig(
     num_channels=3,
-    batch_size=16,
+    batch_size=30,
+    expansion_factor=30,
     image_size=(64, 64),
-    expansion_factor=10,
     random_seed=271941)
 
 data_set = DataSet(

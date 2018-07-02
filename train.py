@@ -12,7 +12,8 @@ from solution import train
 print("Expanding data set.")
 train_expanded = train.expanded(expander).shuffled()
 
-train_expanded.show()
+train_expanded.sorted().show()
+test.sorted().show()
 
 print("Data shape", data.images().shape)
 print("Num classes", data_set.num_classes)
@@ -33,5 +34,5 @@ while True:
       train_expanded_eval['accuracy'],
       test_eval['accuracy']))
 
-  if train_eval['accuracy'] > 0.95:
+  if train_eval['accuracy'] > 0.999:
     break
