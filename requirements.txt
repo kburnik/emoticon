@@ -4,4 +4,3 @@ Pillow
 scipy
 tensorflow
 opencv-python
-

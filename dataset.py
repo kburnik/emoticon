@@ -16,6 +16,7 @@ import random
 import shutil
 import math
 import tensorflow as tf
+from PIL import Image as PilImage
 
 
 class DataSetConfig:
@@ -100,9 +101,7 @@ class Data:
       image_vector = np.asarray(image).reshape(
           *image.size,
           self.config.num_channels)
-      # from PIL import Image as PilImage
-      # img = PilImage.fromarray(image, 'RGB')
-      # img.show()
+      # PilImage.fromarray(image, 'RGB').show()
       np_data[i, ...] = self.normalize(image_vector)
     return np_data
 
@@ -125,6 +124,26 @@ class Data:
   def normalize(self, image):
     """Normalizes the image from 0-255 to 0-1 range."""
     return (image.astype(float) / 256.0)
+
+  def show(self):
+    """Displays the data images and labels."""
+    # TODO: labels!
+    cols = 12
+    rows = math.ceil(float(self.size) / cols)
+    image_size = self.config.image_size
+    canvas_size = (image_size[0] * cols, image_size[1] * rows)
+    canvas = PilImage.new("RGB", canvas_size, (255, 255, 255))
+    for i, sample in enumerate(self.samples):
+      image, label = sample
+      row = int(i / cols)
+      col = i % cols
+      ox = col * image_size[0]
+      oy = row * image_size[1]
+      canvas.paste(
+          image.read(image_size, self.config.num_channels),
+          box=(ox, oy))
+    canvas.show()
+
 
   def _new(self, samples, name=None):
     """Creates a new dataset with provided samples and same config."""
@@ -181,4 +200,3 @@ class DataSet:
     if name is None:
       name = self.name + "-copy"
     return DataSet(dest, config=self.config, name=name)
-

@@ -53,6 +53,12 @@ def plot_images(data, num_classes, cls_pred=None):
   plt.show()
 
 
-predictions = list(model.predict(test.predict_input_fn()))
-plot_images(train.sorted(), num_classes)
-plot_images(test.sorted(), num_classes, predictions)
+plot_images(
+    train.sorted(),
+    num_classes,
+    list(model.predict(train.predict_input_fn())))
+
+plot_images(
+    test.sorted(),
+    num_classes,
+    list(model.predict(test.predict_input_fn())))

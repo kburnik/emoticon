@@ -120,32 +120,26 @@ def build_model(
 
   def build_neural_net(features):
     # Convolutional layer 1.
-    filter_size1 = 4
+    filter_size1 = 8
     num_filters1 = 16
     filter_stride1 = 1
     pool_stride1 = 2
 
     # Convolutional layer 2.
-    filter_size2 = 4
+    filter_size2 = 8
     num_filters2 = 36
     filter_stride2 = 1
     pool_stride2 = 2
 
-    # Convolutional layer 3.
-    filter_size3 = 2
-    num_filters3 = 36
-    filter_stride3 = 2
-    pool_stride3 = 1
-
     # Fully-connected layers.
-    fc1_size = num_classes * 64
-    fc2_size = num_classes * 16
+    fc1_size = num_classes * 16
 
     data = features['x']
 
     with tf.name_scope("Input"):
       x_image = tf.reshape(
-          data, [-1, image_size[1], image_size[0], num_channels])
+          data,
+          [-1, image_size[1], image_size[0], num_channels])
       tf.summary.image("Sample image", x_image)
 
     with tf.name_scope("Convolutional-1"):
@@ -174,21 +168,8 @@ def build_model(
           random_seed=random_seed)
       debug("conv2 shape", conv2_layer.shape)
 
-    with tf.name_scope("Convolutional-3"):
-      conv3_layer, conv3_weights, conv3_biases = new_conv_layer(
-          input=conv2_layer,
-          num_input_channels=num_filters2,
-          filter_size=filter_size3,
-          num_filters=num_filters3,
-          use_pooling=use_pooling,
-          filter_stride=filter_stride3,
-          pool_stride=pool_stride3,
-          use_dropout=False,
-          random_seed=random_seed)
-      debug("conv3 shape", conv3_layer.shape)
-
     with tf.name_scope("Flat-Tier"):
-      flat_layer, num_features = flatten_layer(conv3_layer)
+      flat_layer, num_features = flatten_layer(conv2_layer)
       debug("flat shape", flat_layer.shape)
 
     with tf.name_scope("Fully-connected-1"):
@@ -204,36 +185,30 @@ def build_model(
       fc2_layer, fc2_weights, fc2_biases = new_fc_layer(
           input=fc1_layer,
           num_inputs=fc1_size,
-          num_outputs=fc2_size,
-          use_relu=True,
+          num_outputs=num_classes,
+          use_relu=False,
           use_dropout=False)
       debug("fc2_layer shape", fc2_layer.shape)
-
-    with tf.name_scope("Fully-connected-3"):
-      fc3_layer, fc3_weights, fc3_biases = new_fc_layer(
-          input=fc2_layer,
-          num_inputs=fc2_size,
-          num_outputs=num_classes,
-          use_relu=False)
-      debug("fc3_layer shape", fc3_layer.shape)
 
     logits = fc2_layer
 
     return (
-        logits,
+        conv1_weights, conv1_biases,
+        conv2_weights, conv2_biases,
         fc1_weights, fc1_biases,
         fc2_weights, fc2_biases,
-        fc3_weights, fc3_biases
+        logits,
         )
 
 
   def model_fn(features, labels, mode):
     # Build the neural network.
     with tf.name_scope('Model'):
-      logits, \
+      conv1_weights, conv1_biases, \
+          conv2_weights, conv2_biases, \
           fc1_weights, fc1_biases, \
           fc2_weights, fc2_biases, \
-          fc3_weights, fc3_biases = build_neural_net(features)
+          logits = build_neural_net(features)
 
       # Predictions.
       pred_classes = tf.argmax(logits, axis=1)
@@ -246,21 +221,45 @@ def build_model(
 
     # Define the loss operation.
     with tf.name_scope('Loss'):
-      loss_op = tf.reduce_mean(
+      logits_loss = tf.reduce_mean(
           tf.nn.sparse_softmax_cross_entropy_with_logits(
               logits=logits,
               labels=labels))
 
-      regularizers = (
-          tf.nn.l2_loss(fc1_weights) + tf.nn.l2_loss(fc1_biases) +
-          tf.nn.l2_loss(fc2_weights) + tf.nn.l2_loss(fc2_biases) +
-          tf.nn.l2_loss(fc3_weights) + tf.nn.l2_loss(fc3_biases)
-          )
+      conv1_weights_loss = tf.nn.l2_loss(conv1_weights)
+      conv1_biases_loss = tf.nn.l2_loss(conv1_biases)
+      conv2_weights_loss = tf.nn.l2_loss(conv2_weights)
+      conv2_biases_loss = tf.nn.l2_loss(conv2_biases)
+      conv_regularizers = (
+          conv1_weights_loss + conv1_biases_loss +
+          conv2_weights_loss + conv2_biases_loss)
 
-      # Add the regularization term to the loss.
-      loss_op += 5e-4 * regularizers
+      fc1_weights_loss = tf.nn.l2_loss(fc1_weights)
+      fc1_biases_loss = tf.nn.l2_loss(fc1_biases)
+      fc2_weights_loss = tf.nn.l2_loss(fc2_weights)
+      fc2_biases_loss = tf.nn.l2_loss(fc2_biases)
+      fc_regularizers = (
+          fc1_weights_loss + fc1_biases_loss +
+          fc2_weights_loss + fc2_biases_loss)
 
-      tf.summary.scalar("loss", loss_op)
+      # Add the regularization terms to the loss.
+      loss_op = logits_loss + 0.1 * conv_regularizers + 0.1 * fc_regularizers
+
+      # Export scalars for loss.
+      tf.summary.scalar("conv1_weights", conv1_weights_loss)
+      tf.summary.scalar("conv1_biases", conv1_biases_loss)
+      tf.summary.scalar("conv2_weights", conv1_weights_loss)
+      tf.summary.scalar("conv2_biases", conv1_biases_loss)
+      tf.summary.scalar("conv_regularizers", conv_regularizers)
+
+      tf.summary.scalar("fc1_weights", fc1_weights_loss)
+      tf.summary.scalar("fc1_biases", fc1_biases_loss)
+      tf.summary.scalar("fc2_weights", fc2_weights_loss)
+      tf.summary.scalar("fc2_biases", fc2_biases_loss)
+      tf.summary.scalar("fc_regularizers", fc_regularizers)
+
+      tf.summary.scalar("logits", logits_loss)
+      tf.summary.scalar("total", loss_op)
 
     with tf.name_scope('Accuracy'):
       # Evaluate the accuracy of the model

@@ -11,14 +11,14 @@ import common
 
 ds_config = DataSetConfig(
     num_channels=3,
-    batch_size=12,
+    batch_size=16,
     image_size=(64, 64),
     expansion_factor=20,
     random_seed=271941)
 
 data_set = DataSet(
     name="dataset",
-    path=common.DATA_COMMON_6_GRAYSCALE_DIR,
+    path=common.DATA_COMMON_6_DIR,
     config=ds_config)
 
 num_classes = data_set.num_classes
