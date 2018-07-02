@@ -243,7 +243,7 @@ def build_model(
           fc2_weights_loss + fc2_biases_loss)
 
       # Add the regularization terms to the loss.
-      loss_op = logits_loss + 0.1 * conv_regularizers + 0.1 * fc_regularizers
+      loss_op = logits_loss # + 0.1 * conv_regularizers + 0.1 * fc_regularizers
 
       # Export scalars for loss.
       tf.summary.scalar("conv1_weights", conv1_weights_loss)
