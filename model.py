@@ -178,7 +178,8 @@ def build_model(
           num_inputs=num_features,
           num_outputs=fc1_size,
           use_relu=True,
-          use_dropout=False)
+          use_dropout=True,
+          dropout_rate=dropout_rate)
       debug("fc1_layer shape", fc1_layer.shape)
 
     with tf.name_scope("Fully-connected-2"):
@@ -243,7 +244,7 @@ def build_model(
           fc2_weights_loss + fc2_biases_loss)
 
       # Add the regularization terms to the loss.
-      loss_op = logits_loss # + 0.1 * conv_regularizers + 0.1 * fc_regularizers
+      loss_op = logits_loss + 0.1 * conv_regularizers + 0.1 * fc_regularizers
 
       # Export scalars for loss.
       tf.summary.scalar("conv1_weights", conv1_weights_loss)

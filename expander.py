@@ -30,19 +30,34 @@ def do_elastic_transform(image, alpha, sigma, alpha_affine, random_state=None):
     # Random affine
     center_square = np.float32(shape_size) // 2
     square_size = min(shape_size) // 3
-    pts1 = np.float32([center_square + square_size, [center_square[0]+square_size, center_square[1]-square_size], center_square - square_size])
-    pts2 = pts1 + random_state.uniform(-alpha_affine, alpha_affine, size=pts1.shape).astype(np.float32)
+    pts1 = np.float32([
+        center_square + square_size,
+        [center_square[0] + square_size, center_square[1] - square_size],
+        center_square - square_size])
+    pts2 = pts1 + random_state.uniform(
+        -alpha_affine,
+        alpha_affine,
+        size=pts1.shape).astype(np.float32)
     M = cv2.getAffineTransform(pts1, pts2)
-    image = cv2.warpAffine(image, M, shape_size[::-1], borderMode=cv2.BORDER_REFLECT_101)
+    image = cv2.warpAffine(
+        image, M, shape_size[::-1], borderMode=cv2.BORDER_REFLECT_101)
 
     dx = gaussian_filter((random_state.rand(*shape) * 2 - 1), sigma) * alpha
     dy = gaussian_filter((random_state.rand(*shape) * 2 - 1), sigma) * alpha
     dz = np.zeros_like(dx)
 
-    x, y, z = np.meshgrid(np.arange(shape[1]), np.arange(shape[0]), np.arange(shape[2]))
-    indices = np.reshape(y+dy, (-1, 1)), np.reshape(x+dx, (-1, 1)), np.reshape(z, (-1, 1))
+    x, y, z = np.meshgrid(
+        np.arange(shape[1]),
+        np.arange(shape[0]),
+        np.arange(shape[2]))
 
-    return map_coordinates(image, indices, order=1, mode='reflect').reshape(shape)
+    indices = (
+        np.reshape(y+dy, (-1, 1)),
+        np.reshape(x+dx, (-1, 1)),
+        np.reshape(z, (-1, 1)))
+
+    im = map_coordinates(image, indices, order=1, mode='reflect').reshape(shape)
+    return im
 
 def rand_offset(size):
   """Generates a random offset in the interval [-size, size]."""
@@ -96,9 +111,9 @@ def elastic_transform(image):
   im = pil_to_opencv_image(image)
   im = do_elastic_transform(
       im,
-      alpha=im.shape[1] * 2,
-      sigma=im.shape[1] * 0.1,
-      alpha_affine=im.shape[1] * 0.1)
+      alpha=im.shape[1] * 0.75,
+      sigma=im.shape[1] * 0.04,
+      alpha_affine=im.shape[1] * 0.025)
   return opencv_to_pil_image(im)
 
 
@@ -114,5 +129,5 @@ def expander(sample, factor):
 
 
 if __name__ == '__main__':
-  im = PilImage.open("./grid.png")
-  elastic_transform(im).show()
+  elastic_transform(PilImage.open("./grid.png")).show()
+  elastic_transform(PilImage.open("./data/common-6/crying-face/00.png")).show()
