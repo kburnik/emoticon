@@ -18,8 +18,7 @@ ds_config = DataSetConfig(
 
 data_set = DataSet(
     name="dataset",
-    path=common.DATA_COMMON_6_GRAYSCALE_DIR,
-    #path=common.DATA_COMMON_6_DIR,
+    path=common.DATA_COMMON_6_DIR,
     config=ds_config)
 
 num_classes = data_set.num_classes
