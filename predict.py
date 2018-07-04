@@ -53,6 +53,14 @@ def plot_images(data, num_classes, cls_pred=None):
 
   plt.show()
 
+train_eval = model.evaluate(train.input_fn())
+test_eval = model.evaluate(test.input_fn())
+
+print("Accuracy: train [ %.2f ] test [ %.2f ]" % (
+    train_eval['accuracy'],
+    test_eval['accuracy']))
+
+
 sorted_train = train.sorted()
 sorted_test = test.sorted()
 

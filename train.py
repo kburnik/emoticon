@@ -10,7 +10,7 @@ from solution import test
 from solution import train
 
 print("Expanding data set.")
-train_expanded = train.expanded(expander).shuffled()
+train_expanded = train.shuffled() # .expanded(expander)
 
 train_expanded.sorted().show()
 test.sorted().show()
