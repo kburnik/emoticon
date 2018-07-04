@@ -1,0 +1,16 @@
+{
+  "name": "emoticon-datagen",
+  "version": "1.0.0",
+  "description": "Emoticon generator",
+  "main": "index.js",
+  "dependencies": {
+    "file-saver": "^1.3.8",
+    "serve": "^9.1.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Kristijan Burnik",
+  "license": "ISC"
+}
