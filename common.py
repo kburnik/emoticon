@@ -36,5 +36,9 @@ DATA_COMMON_6_GRAYSCALE_DIR = os.path.join(DATA_ROOT_DIR, "common-6-grayscale")
 DATA_GENERATED_DIR = os.path.join(DATA_ROOT_DIR, "generated")
 """Generated emoticons."""
 
+DATA_GENERATED_EXPANDED_20_DIR =
+    os.path.join(DATA_ROOT_DIR, "generated-exapnded-20")
+"""Generated emoticons with elastic expansion and scaled down to 64x64."""
+
 MODEL_SAVE_DIR = os.path.join(ROOT_DIR, ".model")
 """Directory where the models are cached."""

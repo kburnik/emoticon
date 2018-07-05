@@ -52,11 +52,14 @@ class Image:
     im = self._apply_filters(self.image)
 
     # Resize.
-    im = im.convert('RGBA')
-    im.thumbnail(image_size, PilImage.ANTIALIAS)
-    background = PilImage.new("RGB", image_size, (255, 255, 255))
-    background.paste(im, mask=im.split()[3]) # 3 is the alpha channel
-    im = background
+    if im.size != image_size:
+      im = im.convert('RGBA')
+      im.thumbnail(image_size, PilImage.ANTIALIAS)
+      background = PilImage.new("RGB", image_size, (255, 255, 255))
+      background.paste(im, mask=im.split()[3]) # 3 is the alpha channel
+      im = background
+    else:
+      print("No resize needed")
 
     if num_channels == 1:
       im = im.convert('L')
