@@ -1,5 +1,7 @@
 import argparse
 from common import DataPath
+import sys
+
 
 def parse_config(description="Run operations on the model"):
   parser = argparse.ArgumentParser(
@@ -72,3 +74,19 @@ def parse_config(description="Run operations on the model"):
       default=False,
       help="Whether to show samples of the data before training")
   return parser.parse_args()
+
+
+class Unbuffered(object):
+  def __init__(self, stream):
+      self.stream = stream
+  def write(self, data):
+      self.stream.write(data)
+      self.stream.flush()
+  def writelines(self, datas):
+      self.stream.writelines(datas)
+      self.stream.flush()
+  def __getattr__(self, attr):
+      return getattr(self.stream, attr)
+
+
+sys.stdout = Unbuffered(sys.stdout)

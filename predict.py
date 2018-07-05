@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 Loads the bootstrapped solution and runs the prediction test with visualization.
 """
