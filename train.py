@@ -20,7 +20,8 @@ print("Data size: train [ %d ] train_expanded [ %d ] test [ %d ]" % (
     train_expanded.size,
     test.size))
 
-display_data_detached(train_expanded, test)
+if args.show_data:
+  display_data_detached(train_expanded, test)
 
 i = 0
 while True:

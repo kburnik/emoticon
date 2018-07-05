@@ -66,4 +66,9 @@ def parse_config(description="Run operations on the model"):
       type=int,
       default=100,
       help="Number of steps in each training iteration")
+  parser.add_argument(
+      "--show-data",
+      type=bool,
+      default=False,
+      help="Whether to show samples of the data before training")
   return parser.parse_args()
