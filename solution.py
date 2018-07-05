@@ -12,13 +12,13 @@ import common
 ds_config = DataSetConfig(
     num_channels=3,
     batch_size=20,
-    expansion_factor=20,
+    expansion_factor=0,
     image_size=(64, 64),
     random_seed=271941)
 
 data_set = DataSet(
     name="dataset",
-    path=common.DATA_GENERATED_DIR,
+    path=common.DATA_COMMON_3_DIR,
     config=ds_config)
 
 num_classes = data_set.num_classes

@@ -2,13 +2,15 @@
 Provides a wrapper class for loading and transforming images.
 """
 
+from functools import lru_cache
 from os.path import basename
 from os.path import dirname
 from PIL import Image as PilImage
 from PIL.ImageOps import autocontrast
 import numpy as np
-import random
 import os
+import sys
+import random
 
 
 class Image:
@@ -25,32 +27,45 @@ class Image:
         name=basename(path),
         path=path)
 
-  def __init__(self, image, name='img', label_name='unknown_label', path=None):
+  def __init__(self,
+      image,
+      name='img',
+      label_name='unknown_label',
+      path=None,
+      filters=[]):
     self.image = image
     self.name = name
     self.label_name = label_name
     self.path = path
+    self.filters = filters
 
-  @property
-  def size(self):
-    """Fetches the (width, height) of the image."""
-    return self.image.size
-
+  @lru_cache(maxsize=None)
   def read(self, image_size, num_channels):
     """Reads and resizes the image as RGB."""
     if num_channels not in set([1, 3]):
       raise Exception("Supporting only 1 or 3 channel images")
-    im = self.image.convert('RGBA')
+
+    print(".", end='')
+    sys.stdout.flush()
+
+    # Apply filters.
+    im = self._apply_filters(self.image)
+
+    # Resize.
+    im = im.convert('RGBA')
     im.thumbnail(image_size, PilImage.ANTIALIAS)
     background = PilImage.new("RGB", image_size, (255, 255, 255))
     background.paste(im, mask=im.split()[3]) # 3 is the alpha channel
+    im = background
+
     if num_channels == 1:
-      background = background.convert('L')
-    return background
+      im = im.convert('L')
+
+    return im
 
   def save(self):
     """Saves the image to its designated path."""
-    self.image.save(self.path)
+    self._apply_filters(self.image).save(self.path)
 
   def remove(self):
     """Deletes the image from disk."""
@@ -59,10 +74,11 @@ class Image:
   def transformed(self, func, name_suffix=None):
     """Creates a new transformed image."""
     return self._new(
-        image=func(self.image.convert('RGB')),
+        image=self.image,
+        new_filters=[func],
         name_suffix=name_suffix)
 
-  def _new(self, image, name_suffix=None):
+  def _new(self, image, name_suffix=None, new_filters=None):
     """Creates a new, possibly transformed instance."""
     if name_suffix is None:
       name_suffix = "-%06d" % Image.COUNTER
@@ -75,7 +91,14 @@ class Image:
         image,
         name=new_name,
         path=new_path,
+        filters=self.filters + new_filters,
         label_name=self.label_name)
+
+  def _apply_filters(self, im):
+    im = im.convert('RGB')
+    for filter_fn in self.filters:
+      im = filter_fn(im)
+    return im
 
   def __repr__(self):
     return "Image<%s/%s [%dx%d]>" % (

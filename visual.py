@@ -1,5 +1,11 @@
-import tensorflow as tf
+"""
+Helper methods for visualization in tensorboard or plots/images.
+"""
+
 from math import sqrt
+from threading import Thread
+import tensorflow as tf
+
 
 def put_kernels_on_grid(kernel, pad = 1):
   '''Visualize conv. filters as an image (mostly for the 1st layer).
@@ -69,3 +75,12 @@ def get_conv_output_image(layer, num_filters, rows=4):
   layer = tf.transpose(layer, (2, 0, 3, 1)) # cy,iy,cx,ix
   layer = tf.reshape(layer, (1, cy * iy, cx * ix, 1))
   return layer
+
+
+def display_data(*args):
+  for data in args:
+    data.sorted().show()
+
+
+def display_data_detached(*args):
+  Thread(target=display_data, args=args).start()

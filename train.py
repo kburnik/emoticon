@@ -8,13 +8,9 @@ from solution import data_set
 from solution import model
 from solution import test
 from solution import train
+from visual import display_data_detached
 
-print("Expanding data set.")
 train_expanded = train.expanded(expander).shuffled()
-#train_expanded = train.shuffled()
-
-train_expanded.sorted().show()
-test.sorted().show()
 
 print("Data shape", data.images().shape)
 print("Num classes", data_set.num_classes)
@@ -22,6 +18,8 @@ print("Data size: train [ %d ] train_expanded [ %d ] test [ %d ]" % (
     train.size,
     train_expanded.size,
     test.size))
+
+display_data_detached(train_expanded, test)
 
 i = 0
 while True:
