@@ -3,6 +3,7 @@ Loads the bootstrapped solution and runs the prediction test with visualization.
 """
 
 from solution import num_classes
+from solution import data
 from solution import test
 from solution import train
 from solution import ds_config
@@ -53,23 +54,17 @@ def plot_images(data, num_classes, cls_pred=None):
 
   plt.show()
 
+data_eval = model.evaluate(data.input_fn())
 train_eval = model.evaluate(train.input_fn())
 test_eval = model.evaluate(test.input_fn())
 
-print("Accuracy: train [ %.2f ] test [ %.2f ]" % (
+print("Accuracy: all [ %.2f ] train [ %.2f ] test [ %.2f ]" % (
+    data_eval['accuracy'],
     train_eval['accuracy'],
     test_eval['accuracy']))
 
-
-sorted_train = train.sorted()
-sorted_test = test.sorted()
-
+sorted_data = data.sorted()
 plot_images(
-    sorted_train.sorted(),
+    sorted_data.sorted(),
     num_classes,
-    list(model.predict(sorted_train.input_fn())))
-
-plot_images(
-    sorted_test,
-    num_classes,
-    list(model.predict(sorted_test.input_fn())))
+    list(model.predict(sorted_data.input_fn())))

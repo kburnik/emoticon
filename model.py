@@ -5,6 +5,10 @@ provides options for building variations.
 
 import tensorflow as tf
 from common import MODEL_SAVE_DIR
+from visual import put_kernels_on_grid
+from visual import get_conv_output_image
+from math import sqrt
+from math import floor
 
 def noop(*args):
   """Stand-in method for handling debug info."""
@@ -121,13 +125,15 @@ def build_model(
   def build_neural_net(features):
     # Convolutional layer 1.
     filter_size1 = 8
-    num_filters1 = 16
+    num_filters1 = 25
+    num_rows1 = floor(sqrt(num_filters1))
     filter_stride1 = 1
     pool_stride1 = 2
 
     # Convolutional layer 2.
     filter_size2 = 8
     num_filters2 = 36
+    num_rows2 = floor(sqrt(num_filters2))
     filter_stride2 = 1
     pool_stride2 = 2
 
@@ -154,6 +160,11 @@ def build_model(
           use_dropout=False,
           random_seed=random_seed)
       debug("conv1 shape", conv1_layer.shape)
+      tf.summary.image(
+          'conv1/kernels', put_kernels_on_grid(conv1_weights), max_outputs=1)
+      tf.summary.image(
+          'conv1/out',
+          get_conv_output_image(conv1_layer, num_filters1, rows=num_rows1))
 
     with tf.name_scope("Convolutional-2"):
       conv2_layer, conv2_weights, conv2_biases = new_conv_layer(
@@ -167,6 +178,9 @@ def build_model(
           use_dropout=False,
           random_seed=random_seed)
       debug("conv2 shape", conv2_layer.shape)
+      tf.summary.image(
+          'conv2/out',
+          get_conv_output_image(conv2_layer, num_filters2, rows=num_rows2))
 
     with tf.name_scope("Flat-Tier"):
       flat_layer, num_features = flatten_layer(conv2_layer)
