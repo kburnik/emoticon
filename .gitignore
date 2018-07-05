@@ -2,3 +2,4 @@
 venv
 .model
 logdir/
+data/*-expanded*
