@@ -8,6 +8,7 @@ from solution import data_set
 from solution import model
 from solution import test
 from solution import train
+from solution import args
 from visual import display_data_detached
 
 train_expanded = train.expanded(expander).shuffled()
@@ -24,7 +25,7 @@ display_data_detached(train_expanded, test)
 i = 0
 while True:
   i += 1
-  model.train(train_expanded.input_fn(), steps=100)
+  model.train(train_expanded.input_fn(), steps=args.training_steps)
 
   train_eval = model.evaluate(train.input_fn())
   train_expanded_eval = model.evaluate(train_expanded.input_fn())

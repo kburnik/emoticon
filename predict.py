@@ -2,14 +2,14 @@
 Loads the bootstrapped solution and runs the prediction test with visualization.
 """
 
-from solution import num_classes
 from solution import data
-from solution import test
-from solution import train
 from solution import ds_config
 from solution import model
-import matplotlib.pyplot as plt
+from solution import num_classes
+from solution import test
+from solution import train
 import math
+import matplotlib.pyplot as plt
 
 def plot_images(data, num_classes, cls_pred=None):
   """Draws a plot with images. Optionally can display prediction results too."""
