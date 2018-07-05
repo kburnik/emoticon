@@ -8,10 +8,15 @@ from PIL import Image as PilImage
 from PIL.ImageOps import autocontrast
 import numpy as np
 import random
+import os
 
 
 class Image:
   """Encapsulates an image sample from the dataset."""
+
+  COUNTER = 0
+  """Global counter for transformed images."""
+
   @staticmethod
   def load(path):
     return Image(
@@ -47,19 +52,30 @@ class Image:
     """Saves the image to its designated path."""
     self.image.save(self.path)
 
-  def transformed(self, func):
+  def remove(self):
+    """Deletes the image from disk."""
+    os.remove(self.path)
+
+  def transformed(self, func, name_suffix=None):
     """Creates a new transformed image."""
-    return self._new(image=func(self.image.convert('RGB')))
+    return self._new(
+        image=func(self.image.convert('RGB')),
+        name_suffix=name_suffix)
 
   def _new(self, image, name_suffix=None):
     """Creates a new, possibly transformed instance."""
     if name_suffix is None:
-      name_suffix = "-new%5d" % (random.random() * 10000)
+      name_suffix = "-%06d" % Image.COUNTER
+      Image.COUNTER += 1
+
+    new_name = self.name.replace('.png', name_suffix) + ".png"
+    new_path = self.path.replace('.png', name_suffix) + ".png"
+
     return Image(
         image,
-        name=self.name + name_suffix,
-        label_name=self.label_name,
-        path=self.path)
+        name=new_name,
+        path=new_path,
+        label_name=self.label_name)
 
   def __repr__(self):
     return "Image<%s/%s [%dx%d]>" % (
