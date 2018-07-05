@@ -33,6 +33,11 @@ Head.prototype.render = function(ctx) {
       this.o.radius,
       0,
       2 * Math.PI);
+  if (this.o.fill) {
+    ctx.fillStyle = this.o.fillStyle;
+    ctx.fill();
+    ctx.fillStyle = 'black';
+  }
   ctx.stroke();
 }
 
@@ -52,6 +57,9 @@ Eye.prototype.render = function(ctx) {
       0,
       2 * Math.PI,
       false);
+  ctx.fillStyle = 'white';
+  ctx.fill();
+  ctx.fillStyle = 'black';
   ctx.stroke();
 
   // Pupil.
@@ -87,7 +95,9 @@ Mouth.prototype.render = function(ctx) {
       arc.start,
       arc.end);
   if (this.o.fill) {
+    ctx.fillStyle = this.o.fillStyle;
     ctx.fill();
+    ctx.fillStyle = 'black';
   }
   ctx.stroke();
 }
@@ -101,12 +111,17 @@ Eyebrow.prototype.render = function(ctx) {
   var center = this.o.center.translate(0, this.o.offset)
   ctx.beginPath();
   ctx.lineWidth = this.o.lineWidth;
+  var arc = this.o.arc;
+  if (this.o.flip) {
+    center = center.translate(0, center.y);
+    arc = Arc.flip(arc);
+  }
   ctx.arc(
       center.x,
       center.y,
       this.o.radius,
-      Math.PI + this.o.arc.start,
-      Math.PI + this.o.arc.end);
+      Math.PI + arc.start,
+      Math.PI + arc.end);
   ctx.stroke();
 }
 
@@ -126,7 +141,9 @@ Emoticon.prototype.render = function(ctx) {
   var head = new Head({
     center: center,
     radius: radius,
-    lineWidth: scale * this.o.head.lineWidth
+    lineWidth: scale * this.o.head.lineWidth,
+    fill: this.o.head.fill,
+    fillStyle: this.o.head.fillStyle
   });
 
   var leftEye = new Eye({
@@ -154,6 +171,7 @@ Emoticon.prototype.render = function(ctx) {
     offset: radius * this.o.eyeBrows.offset,
     radius: leftEye.o.borderRadius * this.o.eyeBrows.distance,
     lineWidth: scale * this.o.eyeBrows.lineWidth,
+    flip: this.o.eyeBrows.flip,
     arc: this.o.eyeBrows.arc
   });
 
@@ -162,6 +180,7 @@ Emoticon.prototype.render = function(ctx) {
     offset: radius * this.o.eyeBrows.offset,
     radius: rightEye.o.borderRadius * this.o.eyeBrows.distance,
     lineWidth: scale * this.o.eyeBrows.lineWidth,
+    flip: this.o.eyeBrows.flip,
     arc: this.o.eyeBrows.arc
   });
 
@@ -172,7 +191,8 @@ Emoticon.prototype.render = function(ctx) {
     lineWidth: scale * this.o.mouth.lineWidth,
     arc: this.o.mouth.arc,
     flip: this.o.mouth.flip,
-    fill: this.o.mouth.fill
+    fill: this.o.mouth.fill,
+    fillStyle: this.o.mouth.fillStyle,
   });
 
   var faceParts = [
@@ -193,6 +213,16 @@ function Range(from, to, step) {
   this.step = step;
 }
 
+Range.prototype.pick = function() {
+  var items = (this.to - this.from) / this.step;
+  for (var i = this.from; i <= this.to; i += this.step) {
+    if (Math.random() < 1/items) {
+      return i;
+    }
+  }
+  return this.to;
+}
+
 Range.prototype.generate = function*() {
   for (var i = this.from; i <= this.to; i += this.step) {
     yield i;
@@ -209,6 +239,10 @@ function Choice(elements) {
 
 Choice.of = function(elements) {
   return new Choice(elements);
+}
+
+Choice.prototype.pick = function() {
+  return this.elements[Math.floor(Math.random() * this.elements.length)];
 }
 
 Choice.prototype.generate = function * () {
@@ -259,205 +293,7 @@ ConfigSpace.prototype.generate = function*(probability) {
   yield * generate(this.o, {}, 0);
 };
 
-var sampleEmoticon = new Emoticon({
-  scale: 10,
-  box: {
-    margin: 1,
-    width: 50,
-    height: 50,
-  },
-  head: {
-    lineWidth: 1,
-  },
-  eyes: {
-    centerDistance: 1/6,
-    offset: 1/5,
-    lineWidth: 1/2,
-    left: {
-      size: 1.5,
-      border: 4,
-    },
-    right: {
-      size: 1.5,
-      border: 4
-    }
-  },
-  eyeBrows: {
-    distance: 1.5,
-    offset: 1/7,
-    lineWidth: 1,
-    left: {
-      arc: Arc.of(1/4, 3/4)
-    },
-    right: {
-      arc: Arc.of(1/4, 3/4)
-    }
-  },
-  mouth: {
-    arc: Arc.of(0, 2),
-    centerDistance: 1/5,
-    offset: 1/2,
-    lineWidth: 1/2,
-    flip: false,
-    fill: true
-  }
-});
-
-var happyBase = {
-  head: {
-    lineWidth: 1,
-  },
-  eyes: {
-    centerDistance: 1/8,
-    offset: 1/5,
-    lineWidth: 1/2,
-    size: 1.2,
-    border: 4
-  },
-  eyeBrows: {
-    distance: 1.8,
-    offset: 1/10,
-    lineWidth: 1/2,
-    arc: Arc.of(1/4, 3/4),
-  },
-  mouth: {
-    arc: Arc.of(1/4, 3/4),
-    centerDistance: 3/5,
-    offset: 0,
-    lineWidth: 1/2,
-    flip: false,
-    fill: false
-  }
-};
-
-var happy = new ConfigSpace(Object.assign({}, happyBase, {
-
-  head: {
-    lineWidth: Choice.of([0.1, 0.5, 1]),
-  },
-
-  eyes: {
-    centerDistance: Choice.of([1/8, 1/7, 1/5]),
-    offset: Choice.of([1/10, 1/6]),
-    lineWidth: 1/2,
-    size: Choice.of([0.8, 1.5, 3]),
-    border: Choice.of([0.1, 1, 2])
-  },
-
-  eyeBrows: {
-    distance: Choice.of([1.8, 1.9]),
-    offset: 1/10,
-    lineWidth: Choice.of([1/1000, 1/2, 1]),
-    arc: Choice.of([ Arc.of(1/4, 3/4), Arc.of(1/3, 2/3) ])
-  },
-
-  mouth: {
-    arc: Choice.of([ Arc.of(1/4, 3/4), Arc.of(1/3, 2/3) ]),
-    centerDistance: Choice.of([3/5, 4/5]),
-    offset: 0,
-    lineWidth: Choice.of([1/2, 1]),
-    flip: false,
-    fill: Choice.of([true, false])
-  }
-
-}));
-
-
-var surprised = new ConfigSpace(Object.assign({}, happyBase, {
-
-  head: {
-    lineWidth: Choice.of([0.1, 0.5, 1]),
-  },
-
-  eyes: {
-    centerDistance: Choice.of([1/8, 1/7, 1/5]),
-    offset: Choice.of([1/10, 1/6]),
-    lineWidth: 1/2,
-    size: Choice.of([0.8, 1.5, 3]),
-    border: Choice.of([0.1, 1, 2])
-  },
-
-  eyeBrows: {
-    distance: 1.2,
-    offset: 1/50,
-    lineWidth: Choice.of([1/1000, 1/2, 1]),
-    arc: Choice.of([ Arc.of(1/4, 3/4) ])
-  },
-
-  mouth: {
-    arc: Arc.of(0, 2),
-    centerDistance: Choice.of([0.1, 0.2]),
-    offset: Choice.of([0.4, 0.6]),
-    lineWidth: Choice.of([0.5, 1]),
-    flip: false,
-    fill: Choice.of([true, false])
-  }
-}));
-
-
-
-
-var sadBase = {
-  head: {
-    lineWidth: 1,
-  },
-  eyes: {
-    centerDistance: 1/8,
-    offset: 1/5,
-    lineWidth: 1/2,
-    size: 1.2,
-    border: 1
-  },
-  eyeBrows: {
-    distance: 1.8,
-    offset: 1/10,
-    lineWidth: 1/2,
-    arc: Arc.of(1/4, 3/4),
-  },
-  mouth: {
-    arc: Arc.of(1/4, 3/4),
-    centerDistance: 3/5,
-    offset: 0,
-    lineWidth: 1/2,
-    flip: false,
-    fill: false
-  }
-};
-
-var sad = new ConfigSpace(Object.assign({}, sadBase, {
-
-  head: {
-    lineWidth: Choice.of([0.1, 0.5, 1]),
-  },
-
-  eyes: {
-    centerDistance: Choice.of([1/8, 1/7, 1/5]),
-    offset: Choice.of([1/10, 1/6]),
-    lineWidth: 1/2,
-    size: Choice.of([0.8, 1.5, 3]),
-    border: Choice.of([0.1, 1, 2])
-  },
-
-  eyeBrows: {
-    distance: Choice.of([1.8, 1.9]),
-    offset: 1/10,
-    lineWidth: Choice.of([1/1000, 1/2, 1]),
-    arc: Choice.of([ Arc.of(1/4, 3/4), Arc.of(1/3, 2/3) ])
-  },
-
-  mouth: {
-    arc: Choice.of([ Arc.of(1/4, 3/4) ]),
-    centerDistance: Choice.of([3/5, 2/5]),
-    offset: 0,
-    lineWidth: Choice.of([1/2, 1]),
-    flip: true,
-    fill: false
-  }
-
-}));
-
-
-function draw(emoticon, name) {
+function draw(emoticon) {
   var canvas = document.getElementById("canvas");
   var ctx = canvas.getContext("2d");
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -465,14 +301,12 @@ function draw(emoticon, name) {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = "black";
   emoticon.render(ctx);
+}
 
-  if (window.SAVE) {
-    console.log("Saving", name);
-    canvas.toBlob(function(blob) {
-      saveAs(blob, name);
-    });
-  }
-
+function saveCanvas(name) {
+  canvas.toBlob(function(blob) {
+    saveAs(blob, name);
+  });
 }
 
 function * generateEmoticons(configSpace) {
@@ -495,14 +329,20 @@ function pad(num, size) {
   return s.substr(s.length-size);
 }
 
-function drawGeneratedEmoticons(configSpace, prefix) {
+function drawGeneratedEmoticons(configSpace, prefix, max, doSave) {
   var pause = 100;
   var wait = 0;
   var total = 0;
-  for (let emoticon of generateEmoticons(configSpace)) {
+  var max = max || 20;
+  for (var i = 0; i < max; i++) {
+    var config = select(configSpace);
+    var emoticon = new Emoticon(config);
     (function(emoticon, name) {
       setTimeout(function() {
-        draw(emoticon, name);
+        draw(emoticon);
+        if (doSave) {
+          saveCanvas(name);
+        }
       }, wait);
     })(emoticon, prefix + pad(total, 6) + ".png");
     wait += pause;
@@ -511,9 +351,22 @@ function drawGeneratedEmoticons(configSpace, prefix) {
   console.log("Generating", total, "emoticons");
 }
 
-
-// drawGeneratedEmoticons(happy, "happy-");
-// drawGeneratedEmoticons(surprised, "surprised-");
-window.SAVE = true;
-window.PROBABILITY = 0.7;
-drawGeneratedEmoticons(sad, "sad-");
+function select(config) {
+  var out = Object.assign({}, config);
+  var i = 0;
+  while (true) {
+    var changed = false;
+    for (let key in out) {
+      if (out[key] instanceof Range || out[key] instanceof Choice) {
+        out[key] = out[key].pick()
+        changed = true;
+      } else if (typeof out[key] === 'object') {
+        out[key] = select(out[key]);
+      }
+    }
+    if (!changed || ++i > 10000) {
+      break;
+    }
+  }
+  return out;
+}
