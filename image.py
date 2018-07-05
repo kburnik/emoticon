@@ -9,7 +9,6 @@ from PIL import Image as PilImage
 from PIL.ImageOps import autocontrast
 import numpy as np
 import os
-import sys
 import random
 
 
@@ -46,9 +45,6 @@ class Image:
     """Reads and resizes the image as RGB."""
     if num_channels not in set([1, 3]):
       raise Exception("Supporting only 1 or 3 channel images")
-
-    print(".", end='')
-    sys.stdout.flush()
 
     # Apply filters.
     im = self._apply_filters(self._read())

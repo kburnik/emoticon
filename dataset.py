@@ -126,17 +126,21 @@ class Data:
   def show(self):
     """Displays the data images and labels."""
     # TODO: labels!
-    cols = max(self.config.expansion_factor, 5)
-    rows = math.ceil(float(self.size) / cols)
+    max_rows = 20
+    min_cols = 20
+    cols = max(self.config.expansion_factor, max_rows)
+    rows = min(math.ceil(float(self.size) / cols), min_cols)
     image_size = self.config.image_size
     canvas_size = (image_size[0] * cols, image_size[1] * rows)
     canvas = PilImage.new("RGB", canvas_size, (255, 255, 255))
     for i, sample in enumerate(self.samples):
-      image, label = sample
       row = int(i / cols)
+      if row >= rows:
+        break
       col = i % cols
       ox = col * image_size[0]
       oy = row * image_size[1]
+      image, label = sample
       canvas.paste(
           image.read(image_size, self.config.num_channels),
           box=(ox, oy))
