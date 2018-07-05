@@ -22,7 +22,9 @@ class Image:
   @staticmethod
   def load(path):
     return Image(
-        image=PilImage.open(path),
+        # TODO: Use some other promise/late API to signify we should read the
+        # image.
+        image=[path],
         label_name=basename(dirname(path)),
         name=basename(path),
         path=path)
@@ -49,7 +51,7 @@ class Image:
     sys.stdout.flush()
 
     # Apply filters.
-    im = self._apply_filters(self.image)
+    im = self._apply_filters(self._read())
 
     # Resize.
     if im.size != image_size:
@@ -58,8 +60,6 @@ class Image:
       background = PilImage.new("RGB", image_size, (255, 255, 255))
       background.paste(im, mask=im.split()[3]) # 3 is the alpha channel
       im = background
-    else:
-      print("No resize needed")
 
     if num_channels == 1:
       im = im.convert('L')
@@ -68,7 +68,7 @@ class Image:
 
   def save(self):
     """Saves the image to its designated path."""
-    self._apply_filters(self.image).save(self.path)
+    self._apply_filters(self._read()).save(self.path)
 
   def remove(self):
     """Deletes the image from disk."""
@@ -80,6 +80,13 @@ class Image:
         image=self.image,
         new_filters=[func],
         name_suffix=name_suffix)
+
+  @lru_cache(maxsize=None)
+  def _read(self):
+    if isinstance(self.image, (list,)):
+      return PilImage.open(self.image[0])
+    else:
+      return self.image
 
   def _new(self, image, name_suffix=None, new_filters=None):
     """Creates a new, possibly transformed instance."""
