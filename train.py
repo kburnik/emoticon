@@ -11,6 +11,7 @@ from solution import train
 
 print("Expanding data set.")
 train_expanded = train.expanded(expander).shuffled()
+#train_expanded = train.shuffled()
 
 train_expanded.sorted().show()
 test.sorted().show()
@@ -22,7 +23,9 @@ print("Data size: train [ %d ] train_expanded [ %d ] test [ %d ]" % (
     train_expanded.size,
     test.size))
 
+i = 0
 while True:
+  i += 1
   model.train(train_expanded.input_fn(), steps=100)
 
   train_eval = model.evaluate(train.input_fn())
@@ -34,5 +37,5 @@ while True:
       train_expanded_eval['accuracy'],
       test_eval['accuracy']))
 
-  if train_eval['accuracy'] > 0.999:
+  if train_eval['accuracy'] > 0.999 and i > 5:
     break

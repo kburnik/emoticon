@@ -65,6 +65,6 @@ print("Accuracy: all [ %.2f ] train [ %.2f ] test [ %.2f ]" % (
 
 sorted_data = data.sorted()
 plot_images(
-    sorted_data.sorted(),
+    sorted_data,
     num_classes,
     list(model.predict(sorted_data.input_fn())))

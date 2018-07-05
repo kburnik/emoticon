@@ -5,6 +5,7 @@ Provides a wrapper class for loading and transforming images.
 from os.path import basename
 from os.path import dirname
 from PIL import Image as PilImage
+from PIL.ImageOps import autocontrast
 import numpy as np
 import random
 

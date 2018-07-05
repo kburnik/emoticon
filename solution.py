@@ -12,7 +12,7 @@ import common
 ds_config = DataSetConfig(
     num_channels=3,
     batch_size=20,
-    expansion_factor=50,
+    expansion_factor=20,
     image_size=(64, 64),
     random_seed=271941)
 

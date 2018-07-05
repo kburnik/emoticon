@@ -21,6 +21,9 @@ DATA_SIMPLE_DIR = os.path.join(DATA_ROOT_DIR, "simple")
 DATA_COMMON_3_DIR = os.path.join(DATA_ROOT_DIR, "common-3")
 """Picked out images for common emoticons."""
 
+DATA_COMMON_3_GRAYSCALE_DIR = os.path.join(DATA_ROOT_DIR, "common-3-grayscale")
+"""Picked out images for common emoticons (grayscale)."""
+
 DATA_COMMON_4_DIR = os.path.join(DATA_ROOT_DIR, "common-4")
 """Picked out images for common emoticons."""
 
