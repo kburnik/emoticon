@@ -4,15 +4,18 @@ import sys
 
 
 def parse_config(description="Run operations on the model"):
-  parser = argparse.ArgumentParser(
-      description=description)
+  """Parses the configuration from command-line arguments."""
+  parser = argparse.ArgumentParser(description=description)
 
+  # Data set selection.
   parser.add_argument(
       "--dataset",
       type=str,
       default='COMMON_3',
       choices=DataPath.names(),
       help="Data set to use")
+
+  # Data set configuration.
   parser.add_argument(
       "--num-channels",
       type=int,
@@ -38,6 +41,8 @@ def parse_config(description="Run operations on the model"):
       type=int,
       default=271941,
       help="The random seed for splitting the data and other random state")
+
+  # Training.
   parser.add_argument(
       "--split-ratio",
       type=float,
@@ -56,35 +61,41 @@ def parse_config(description="Run operations on the model"):
   parser.add_argument(
       "--learning-rate",
       type=float,
-      default=0.5,
+      default=0.01,
       help="The training learning rate for MomentumOptimizer")
   parser.add_argument(
       "--momentum",
       type=float,
-      default=0.01,
+      default=0.6,
       help="The training momentum for MomentumOptimizer")
   parser.add_argument(
       "--training-steps",
       type=int,
       default=100,
       help="Number of steps in each training iteration")
+
+  # Visualization.
   parser.add_argument(
       "--show-data",
       type=bool,
       default=False,
       help="Whether to show samples of the data before training")
+
   return parser.parse_args()
 
 
 class Unbuffered(object):
   def __init__(self, stream):
       self.stream = stream
+
   def write(self, data):
       self.stream.write(data)
       self.stream.flush()
+
   def writelines(self, datas):
       self.stream.writelines(datas)
       self.stream.flush()
+
   def __getattr__(self, attr):
       return getattr(self.stream, attr)
 

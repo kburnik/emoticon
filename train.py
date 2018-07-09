@@ -1,4 +1,4 @@
-#!/usr/bin/env PYTHONUNBUFFERED=1 python
+#!/usr/bin/env python
 
 """
 Loads the bootstrapped solution and runs the training.

@@ -106,7 +106,6 @@ class Data:
       image_vector = np.asarray(image).reshape(
           *image.size,
           self.config.num_channels)
-      # PilImage.fromarray(image, 'RGB').show()
       np_data[i, ...] = self.normalize(image_vector)
     return np_data
 
