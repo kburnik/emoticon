@@ -1,6 +1,17 @@
-import argparse
 from common import DataPath
+from common import MODEL_SAVE_DIR
+import argparse
+import os
 import sys
+
+
+def str2bool(v):
+  if v.lower() in ('yes', 'true', 't', 'y', '1'):
+    return True
+  elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+    return False
+  else:
+    raise argparse.ArgumentTypeError('Boolean value expected.')
 
 
 def parse_config(description="Run operations on the model"):
@@ -14,6 +25,13 @@ def parse_config(description="Run operations on the model"):
       default='COMMON_3',
       choices=DataPath.names(),
       help="Data set to use")
+
+  # Model output.
+  parser.add_argument(
+      "--model-dir",
+      type=str,
+      default=MODEL_SAVE_DIR,
+      help="Saved model location")
 
   # Data set configuration.
   parser.add_argument(
@@ -48,11 +66,15 @@ def parse_config(description="Run operations on the model"):
       type=float,
       default=0.6,
       help="The train/test split ratio")
+
   parser.add_argument(
       "--use-dropout",
-      type=bool,
+      type=str2bool,
+      nargs='?',
+      const=True,
       default=True,
-      help="Whether to use dropout during training")
+      help="Whether to use dropout in the model.")
+
   parser.add_argument(
       "--dropout-rate",
       type=float,
@@ -77,7 +99,9 @@ def parse_config(description="Run operations on the model"):
   # Visualization.
   parser.add_argument(
       "--show-data",
-      type=bool,
+      type=str2bool,
+      nargs='?',
+      const=True,
       default=False,
       help="Whether to show samples of the data before training")
 
@@ -101,3 +125,4 @@ class Unbuffered(object):
 
 
 sys.stdout = Unbuffered(sys.stdout)
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'

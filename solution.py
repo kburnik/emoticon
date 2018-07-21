@@ -37,4 +37,5 @@ model = build_model(
     use_dropout=args.use_dropout,
     dropout_rate=args.dropout_rate,
     learning_rate=args.learning_rate,
-    momentum=args.momentum)
+    momentum=args.momentum,
+    save_dir=args.model_dir)
