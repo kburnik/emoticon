@@ -3,3 +3,4 @@ venv
 .model
 logdir/
 data/*-expanded*
+data/$Recycle.Bin/
