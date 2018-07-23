@@ -58,6 +58,19 @@ def plot_images(data, num_classes, cls_pred=None):
 
   plt.show()
 
+if args.show_data_hash:
+  print("Hash: all [ %s ] train [ %s ] test [ %s ]" % (
+      data.hash(),
+      train.hash(),
+      test.hash()))
+
+if args.show_data:
+  sorted_data = data.sorted()
+  plot_images(
+      sorted_data,
+      num_classes,
+      list(model.predict(sorted_data.input_fn())))
+
 data_eval = model.evaluate(data.input_fn())
 train_eval = model.evaluate(train.input_fn())
 test_eval = model.evaluate(test.input_fn())
@@ -67,9 +80,3 @@ print("Accuracy: all [ %.2f ] train [ %.2f ] test [ %.2f ]" % (
     train_eval['accuracy'],
     test_eval['accuracy']))
 
-if args.show_data:
-  sorted_data = data.sorted()
-  plot_images(
-      sorted_data,
-      num_classes,
-      list(model.predict(sorted_data.input_fn())))

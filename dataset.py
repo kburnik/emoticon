@@ -11,12 +11,13 @@ from os.path import basename
 from os.path import dirname
 from os.path import exists
 from os.path import join
+from PIL import Image as PilImage
+import hashlib
+import math
 import numpy as np
 import random
 import shutil
-import math
 import tensorflow as tf
-from PIL import Image as PilImage
 
 
 class DataSetConfig:
@@ -145,6 +146,12 @@ class Data:
           box=(ox, oy))
     canvas.show()
 
+  def hash(self):
+    """Computes the overall hash of the data."""
+    hash = hashlib.md5()
+    hash.update(np.asarray(self.labels()))
+    hash.update(self.images())
+    return hash.hexdigest()
 
   def _new(self, samples, name=None):
     """Creates a new dataset with provided samples and same config."""

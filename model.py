@@ -122,7 +122,7 @@ def build_model(
   image_size = ds_config.image_size
   random_seed = ds_config.random_seed
 
-  def build_neural_net(features):
+  def build_neural_net(features, mode):
     # Convolutional layer 1.
     filter_size1 = 8
     num_filters1 = 25
@@ -192,7 +192,8 @@ def build_model(
           num_inputs=num_features,
           num_outputs=fc1_size,
           use_relu=True,
-          use_dropout=True,
+          # Dropout is only valid for training.
+          use_dropout=use_dropout and mode == tf.estimator.ModeKeys.TRAIN,
           dropout_rate=dropout_rate)
       debug("fc1_layer shape", fc1_layer.shape)
 
@@ -223,7 +224,7 @@ def build_model(
           conv2_weights, conv2_biases, \
           fc1_weights, fc1_biases, \
           fc2_weights, fc2_biases, \
-          logits = build_neural_net(features)
+          logits = build_neural_net(features, mode)
 
       # Predictions.
       pred_classes = tf.argmax(logits, axis=1)

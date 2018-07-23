@@ -96,14 +96,22 @@ def parse_config(description="Run operations on the model"):
       default=100,
       help="Number of steps in each training iteration")
 
-  # Visualization.
+  # Visualization and debugging.
   parser.add_argument(
       "--show-data",
       type=str2bool,
       nargs='?',
       const=True,
       default=False,
-      help="Whether to show samples of the data before training")
+      help="Whether to show samples of the used data")
+  parser.add_argument(
+      "--show-data-hash",
+      type=str2bool,
+      nargs='?',
+      const=True,
+      default=False,
+      help="Whether to print out the used data hash")
+
 
   return parser.parse_args()
 

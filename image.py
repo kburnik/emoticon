@@ -7,6 +7,7 @@ from os.path import basename
 from os.path import dirname
 from PIL import Image as PilImage
 from PIL.ImageOps import autocontrast
+import hashlib
 import numpy as np
 import os
 import random
