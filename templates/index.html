@@ -1,13 +1,17 @@
 {% extends "template.html" %}
 {% block main %}
+<h1>Emoticon classifier</h1>
+
+<br><br>
+
 <div class='row'>
   <div class='col-md-6'>
-    <h1>Reports</h1>
-    {% include 'report-list.html' %}
+    <h2>Data sets</h2>
+    {% include 'dataset-list.html' %}
   </div>
   <div class='col-md-6'>
-    <h1>Data sets</h1>
-    {% include 'dataset-list.html' %}
+    <h2>Reports</h2>
+    {% include 'report-list.html' %}
   </div>
 </div>
 {% endblock %}
