@@ -4,59 +4,85 @@
 Loads the bootstrapped solution and runs the prediction test with visualization.
 """
 
+from common import REPORT_DIR
 from solution import args
 from solution import data
+from solution import data_set
 from solution import ds_config
 from solution import model
 from solution import num_classes
 from solution import test
 from solution import train
+import json
 import math
 import matplotlib.pyplot as plt
+import os
+import time
 
 
-def plot_images(data, num_classes, cls_pred=None):
-  """Draws a plot with images. Optionally can display prediction results too."""
-  images = data.images()
-  cls_true = data.labels()
-  grid_size = math.ceil(math.sqrt(data.size))
-
-  rows = grid_size
-  cols = math.ceil(float(data.size) / grid_size)
-
-  fig, axes = plt.subplots(rows, cols)
-  fig.subplots_adjust(hspace=1, wspace=0.3)
-
-  for i, ax in enumerate(axes.flat):
-    if i >= data.size:
-      ax.axis('off')
-      continue
-
-    ax.imshow(
-        images[i],
-        cmap='binary')
-
-    # Show true and predicted classes.
-    if cls_pred:
-      xlabel = "T: {0}, P: {1}".format(cls_true[i], cls_pred[i])
-      if cls_true[i] == cls_pred[i]:
-        color = "green"
-        xlabel = "OK"
-      else:
-        color = "red"
+def observe(data_set, data, predictions):
+  """Generates an observation report based on predictions."""
+  num_classes = data_set.label_set.size
+  error_matrix = [[0 for i in range(num_classes)] for i in range(num_classes)]
+  report = {
+    'results': [],
+    'errors': [],
+    'summary': {},
+    'error_matrix': error_matrix,
+    'data': data.info()
+  }
+  total = 0
+  matched = 0
+  for i, sample in enumerate(data.samples):
+    image, label = sample
+    actual_index = label.index
+    predicted_index = int(predictions[i])
+    predicted_label = data_set.label_set.labels()[predicted_index]
+    observation = {
+      'image': image.rel_path,
+      'actual': label.name,
+      'predicted': predicted_label.name,
+      'matched': predicted_index == actual_index
+    }
+    total += 1
+    if predicted_index == actual_index:
+      matched += 1
     else:
-      xlabel = str(cls_true[i])
-      color = "gray"
+      report['errors'].append(observation)
+      error_matrix[predicted_index][actual_index] += 1
+    report['results'].append(observation)
 
-    # Show the classes as the label on the x-axis.
-    ax.set_xlabel(xlabel)
-    ax.xaxis.label.set_color(color)
+  accuracy = float(matched) / total
+  report['summary'] = {
+    'matched': matched,
+    'total': total,
+    'accuracy': accuracy,
+    'display': "Matched %d of %d (%.2f%% accurate)" % (
+          matched, total, accuracy * 100.0)
+  }
+  return report
 
-    # Remove ticks from the plot.
-    ax.set_xticks([])
-    ax.set_yticks([])
 
-  plt.show()
+def generate_report(data_set, data_prediction_pairs, config):
+  report = {
+    'data_set': data_set.info(),
+    'config': config.__dict__,
+    'observations': []
+  }
+  for data, predictions in data_prediction_pairs:
+    observations = observe(data_set, data, predictions)
+    report['observations'].append(observations)
+  return report
+
+
+def save_report(report):
+  if not os.path.exists(REPORT_DIR):
+    os.makedirs(REPORT_DIR, 0o755)
+  report_basename = time.strftime('%Y-%m-%d-%H%M%S') + '.json'
+  report_filename = os.path.join(REPORT_DIR, report_basename)
+  with open(report_filename, 'w') as f:
+    json.dump(report, f, indent=2)
+
 
 if args.show_data_hash:
   print("Hash: all [ %s ] train [ %s ] test [ %s ]" % (
@@ -64,12 +90,21 @@ if args.show_data_hash:
       train.hash(),
       test.hash()))
 
-if args.show_data:
-  sorted_data = data.sorted()
-  plot_images(
-      sorted_data,
-      num_classes,
-      list(model.predict(sorted_data.input_fn())))
+datas = [data, train, test]
+data_prediction_pairs = []
+for d in datas:
+  sorted_data = d.sorted()
+  predictions = list(model.predict(sorted_data.input_fn()))
+  data_prediction_pairs.append(
+      (sorted_data, predictions))
+
+report = generate_report(
+    data_set,
+    data_prediction_pairs,
+    args)
+save_report(report)
+
+##
 
 data_eval = model.evaluate(data.input_fn())
 train_eval = model.evaluate(train.input_fn())

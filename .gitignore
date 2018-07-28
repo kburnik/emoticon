@@ -5,3 +5,4 @@ logdir/
 data/*-expanded*
 data/$Recycle.Bin/
 models/
+reports/

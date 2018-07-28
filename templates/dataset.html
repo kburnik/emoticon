@@ -1,0 +1,22 @@
+{% extends "template.html" %}
+{% block title %}{{name}} data set - {% endblock %}
+{% block main %}
+  <h1>{{name}}</h1>
+  {% for label, samples in dataset.get_samples_by_label() %}
+  <br><br>
+  <h3>{{label.name}}</h3>
+  <div class='row'>
+    {% for image, label in samples %}
+    <div class='col-md-1 text-center' style='margin-bottom: 1em'>
+      <img src='{{image.rel_path}}'
+          width='64'
+          height='64'
+          alt='{{image.basename}}'
+          title='{{image.basename}}'
+          >
+      <br>
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+{% endblock %}

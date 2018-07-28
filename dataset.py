@@ -146,6 +146,14 @@ class Data:
           box=(ox, oy))
     canvas.show()
 
+  def info(self):
+    """Returns the basic info for the data set."""
+    return {
+      'hash': self.hash(),
+      'name': self.name,
+      'samples': len(list(self.samples))
+    }
+
   def hash(self):
     """Computes the overall hash of the data."""
     hash = hashlib.md5()
@@ -177,6 +185,19 @@ class DataSet:
     for sample in self.get_samples():
       print(sample)
 
+  def info(self):
+    """Returns the basic info for the data set."""
+    return {
+      'name': self.name,
+      'classes': self.num_classes,
+      'samples': len(list(self.get_samples())),
+      'labels': [label.name for label in self.label_set.labels()],
+      'label_sample_images':
+          [image.rel_path for image in self.get_label_sample_images()],
+      'name': self.name,
+      'config': self.config.__dict__
+    }
+
   @lru_cache(maxsize=None)
   def data(self):
     """Returns the Data object of the dataset."""
@@ -192,8 +213,25 @@ class DataSet:
   def get_samples(self):
     """Streams all the dataset samples and labels."""
     for label in self.label_set.labels():
-      for image_path in glob(join(label.path, "*.png")):
-        yield Image.load(image_path), label
+      for sample in self.enumerate_samples(label):
+        yield sample
+
+  def get_label_sample_images(self):
+    """Returns a sample image for each label."""
+    for label in self.label_set.labels():
+      for image, _ in self.enumerate_samples(label):
+        yield image
+        break
+
+  def get_samples_by_label(self):
+    """Streams the dataset grouped by label."""
+    for label in self.label_set.labels():
+      yield label, self.enumerate_samples(label)
+
+  def enumerate_samples(self, label):
+    """Streams the samples for a provided label."""
+    for image_path in glob(join(label.path, "*.png")):
+      yield Image.load(image_path), label
 
   def copy(self, dest, name=None, force=False):
     """Creates a copy of the entire dataset to the destination path."""

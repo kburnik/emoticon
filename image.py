@@ -2,6 +2,7 @@
 Provides a wrapper class for loading and transforming images.
 """
 
+from common import ROOT_DIR
 from functools import lru_cache
 from os.path import basename
 from os.path import dirname
@@ -40,6 +41,14 @@ class Image:
     self.label_name = label_name
     self.path = path
     self.filters = filters
+
+  @property
+  def basename(self):
+    return os.path.basename(self.path)
+
+  @property
+  def rel_path(self):
+    return self.path[len(ROOT_DIR):].replace('\\', '/')
 
   @lru_cache(maxsize=None)
   def read(self, image_size, num_channels):

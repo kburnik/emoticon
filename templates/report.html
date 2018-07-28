@@ -1,0 +1,97 @@
+{% extends "template.html" %}
+{% block title %}{{name}} report - {% endblock %}
+{% block main %}
+  <h1>Report {{ name }}</h1>
+
+  <br><br>
+
+  <h3>Observations</h3>
+
+  <br>
+
+
+  <div class='row'>
+    {% for ob in report['observations'] %}
+      <div class='col-md-4 text-center'>
+        {{ob['data']['name']}} ({{ob['data']['samples']}})
+        <br>
+        <strong>{{ob['summary']['display']}}</strong>
+
+        <br><br>
+
+        <h4>Errors</h4>
+
+        <!-- Confusion matrix -->
+        {% set labels = report["data_set"]["labels"] %}
+        {% set label_samples_images = report["data_set"]["label_sample_images"] %}
+        <table class='table grid'>
+          <thead>
+            <tr>
+              <th></th>
+              <th class='text-center' colspan="{{report['data_set']['classes']}}">Actual</th>
+            </tr>
+            <tr>
+              <th>&nbsp;</th>
+              {% for label_samples_image in label_samples_images %}
+              <th><img
+                  src='{{label_samples_image}}'
+                  width='32'
+                  height='32'></th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+          {% for row in ob['error_matrix'] %}
+            {% set i = loop.index - 1 %}
+            <tr>
+              <th><img
+                      src='{{label_samples_images[i]}}'
+                      width='32'
+                      height='32'></th>
+              {% for err in row %}
+              {% set j = loop.index - 1 %}
+              <td>
+                {% if err > 0 %}
+                <strong class='text-danger'
+                  title='{{labels[i]}} / {{labels[j]}}'>
+                  {{err}}
+                </strong>
+                {% else %}
+                <span>.</span>
+                {% endif %}
+              </td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+
+        <div class='errors'>
+          {% for s in ob['errors'] %}
+          <div style='display:block; margin-bottom: 1em' class='text-center'>
+            <img src='{{s["image"]}}' width='64' height='64'><br>
+            <small><span class='text-danger'>{{s['predicted']}}</span>
+            / {{s['actual']}}</small>
+          </div>
+          {% endfor %}
+        </div>
+
+      </div>
+
+    {% endfor %}
+  </div>
+
+  <br><br>
+
+  <h3>Config</h3>
+  <table class='table table-striped'>
+    <tbody>
+    {% for var, val in report['config'].items() %}
+      <tr><th>{{var}}:</th><td>{{val}}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+
+
+{% endblock %}

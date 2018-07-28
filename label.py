@@ -15,7 +15,6 @@ class Label:
   def __repr__(self):
     return "Label<%s:%d>" % (self.name, self.index)
 
-
 class LabelSet:
   """Encapsulates dataset labels."""
   def __init__(self, path):

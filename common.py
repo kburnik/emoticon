@@ -13,6 +13,9 @@ DATA_ROOT_DIR = os.path.join(ROOT_DIR, "data")
 MODEL_SAVE_DIR = os.path.join(ROOT_DIR, ".model")
 """Directory where the models are cached."""
 
+REPORT_DIR = os.path.join(ROOT_DIR, "reports")
+"""Directory for storing prediction reports."""
+
 
 def data_dir(dir_name):
   return os.path.join(DATA_ROOT_DIR, dir_name)
