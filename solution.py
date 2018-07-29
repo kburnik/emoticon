@@ -34,8 +34,10 @@ train, test = data.split(args.split_ratio, names=["train", "test"])
 model = build_model(
     ds_config,
     num_classes=num_classes,
-    use_dropout=args.use_dropout,
+    dropout=args.dropout,
+    pooling=args.pooling,
     dropout_rate=args.dropout_rate,
+    filter_size=args.filter_size,
     learning_rate=args.learning_rate,
     momentum=args.momentum,
     save_dir=args.model_dir)

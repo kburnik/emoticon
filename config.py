@@ -1,6 +1,8 @@
+from collections import namedtuple
 from common import DataPath
 from common import MODEL_SAVE_DIR
 import argparse
+import json
 import os
 import sys
 
@@ -18,6 +20,13 @@ def parse_config(description="Run operations on the model"):
   """Parses the configuration from command-line arguments."""
   parser = argparse.ArgumentParser(description=description)
 
+  # Model output.
+  parser.add_argument(
+      "--model-dir",
+      type=str,
+      default=MODEL_SAVE_DIR,
+      help="Saved model location")
+
   # Data set selection.
   parser.add_argument(
       "--dataset",
@@ -25,13 +34,6 @@ def parse_config(description="Run operations on the model"):
       default='COMMON_3',
       choices=DataPath.names(),
       help="Data set to use")
-
-  # Model output.
-  parser.add_argument(
-      "--model-dir",
-      type=str,
-      default=MODEL_SAVE_DIR,
-      help="Saved model location")
 
   # Data set configuration.
   parser.add_argument(
@@ -68,12 +70,22 @@ def parse_config(description="Run operations on the model"):
       help="The train/test split ratio")
 
   parser.add_argument(
-      "--use-dropout",
-      type=str2bool,
-      nargs='?',
-      const=True,
-      default=True,
-      help="Whether to use dropout in the model.")
+      "--dropout",
+      type=int,
+      default=4,
+      help="Dropout, bitwise [fc2][fc1][conv2][conv1]. 0 = none, 15 = all")
+
+  parser.add_argument(
+      "--pooling",
+      type=int,
+      default=3,
+      help="Max-pooling, bitwise: [conv2][conv1]; 0 = none, 3 = all")
+
+  parser.add_argument(
+      "--filter-size",
+      type=int,
+      default=8,
+      help="Convolution filter size")
 
   parser.add_argument(
       "--dropout-rate",
@@ -105,6 +117,13 @@ def parse_config(description="Run operations on the model"):
       default=False,
       help="Whether to show samples of the used data")
   parser.add_argument(
+      "--report",
+      type=str2bool,
+      nargs='?',
+      const=True,
+      default=False,
+      help="Whether to generate a report when running prediction")
+  parser.add_argument(
       "--show-data-hash",
       type=str2bool,
       nargs='?',
@@ -112,6 +131,14 @@ def parse_config(description="Run operations on the model"):
       default=False,
       help="Whether to print out the used data hash")
 
+  # Merge with training model's config as defaults.
+  model_dir = parser.parse_known_args()[0].model_dir
+  model_config_filename = os.path.join(model_dir, 'config.json')
+  if os.path.exists(model_config_filename):
+    with open(model_config_filename, 'r') as f:
+      train_args_dict = json.load(f)
+      parser.set_defaults(**train_args_dict)
+      print('Using defaults from training config')
 
   return parser.parse_args()
 

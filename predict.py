@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 """
-Loads the bootstrapped solution and runs the prediction test with visualization.
+Loads the bootstrapped solution and runs the prediction test and optionally
+generates a JSON report.
 """
 
 from common import REPORT_DIR
@@ -93,34 +94,28 @@ def save_report(report):
     json.dump(report, f, indent=2)
 
 
-if args.show_data_hash:
-  print("Hash: all [ %s ] train [ %s ] test [ %s ]" % (
-      data.hash(),
-      train.hash(),
-      test.hash()))
+if __name__ == '__main__':
+  if args.show_data_hash:
+    print("Hash: all [ %s ] train [ %s ] test [ %s ]" % (
+        data.hash(),
+        train.hash(),
+        test.hash()))
 
-datas = [data, train, test]
-data_prediction_pairs = []
-for d in datas:
-  sorted_data = d.sorted()
-  predictions = list(model.predict(sorted_data.input_fn()))
-  data_prediction_pairs.append(
-      (sorted_data, predictions))
+  if args.report:
+    print("Generating report...")
+    datas = [data, train, test]
+    data_prediction_pairs = []
+    for d in datas:
+      sorted_data = d.sorted()
+      predictions = list(model.predict(sorted_data.input_fn()))
+      data_prediction_pairs.append((sorted_data, predictions))
+    save_report(generate_report(data_set, data_prediction_pairs, args))
 
-report = generate_report(
-    data_set,
-    data_prediction_pairs,
-    args)
-save_report(report)
+  data_eval = model.evaluate(data.input_fn())
+  train_eval = model.evaluate(train.input_fn())
+  test_eval = model.evaluate(test.input_fn())
 
-##
-
-data_eval = model.evaluate(data.input_fn())
-train_eval = model.evaluate(train.input_fn())
-test_eval = model.evaluate(test.input_fn())
-
-print("Accuracy: all [ %.2f ] train [ %.2f ] test [ %.2f ]" % (
-    data_eval['accuracy'],
-    train_eval['accuracy'],
-    test_eval['accuracy']))
-
+  print("Accuracy: all [ %.2f ] train [ %.2f ] test [ %.2f ]" % (
+      data_eval['accuracy'],
+      train_eval['accuracy'],
+      test_eval['accuracy']))

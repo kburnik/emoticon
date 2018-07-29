@@ -112,9 +112,10 @@ def build_model(
     num_classes,
     learning_rate=0.1,
     momentum=0.9,
-    use_pooling=True,
-    use_dropout=False,
+    pooling=3,
+    dropout=4,
     dropout_rate=0.5,
+    filter_size=8,
     debug=noop,
     save_dir=MODEL_SAVE_DIR):
   """Builds the CNN for training, evaluation or prediction."""
@@ -123,15 +124,17 @@ def build_model(
   random_seed = ds_config.random_seed
 
   def build_neural_net(features, mode):
+    train_mode = mode == tf.estimator.ModeKeys.TRAIN
+
     # Convolutional layer 1.
-    filter_size1 = 8
+    filter_size1 = filter_size
     num_filters1 = 25
     num_rows1 = floor(sqrt(num_filters1))
     filter_stride1 = 1
     pool_stride1 = 2
 
     # Convolutional layer 2.
-    filter_size2 = 8
+    filter_size2 = filter_size
     num_filters2 = 36
     num_rows2 = floor(sqrt(num_filters2))
     filter_stride2 = 1
@@ -154,10 +157,10 @@ def build_model(
           num_input_channels=num_channels,
           filter_size=filter_size1,
           num_filters=num_filters1,
-          use_pooling=False,
+          use_pooling=(pooling & 1) > 0,
           filter_stride=filter_stride1,
           pool_stride=pool_stride1,
-          use_dropout=False,
+          use_dropout=(dropout & 1) > 0 and train_mode,
           random_seed=random_seed)
       debug("conv1 shape", conv1_layer.shape)
       tf.summary.image(
@@ -172,10 +175,10 @@ def build_model(
           num_input_channels=num_filters1,
           filter_size=filter_size2,
           num_filters=num_filters2,
-          use_pooling=use_pooling,
+          use_pooling=(pooling & 2) > 0,
           filter_stride=filter_stride2,
           pool_stride=pool_stride2,
-          use_dropout=False,
+          use_dropout=(dropout & 2) > 0 and train_mode,
           random_seed=random_seed)
       debug("conv2 shape", conv2_layer.shape)
       tf.summary.image(
@@ -192,8 +195,7 @@ def build_model(
           num_inputs=num_features,
           num_outputs=fc1_size,
           use_relu=True,
-          # Dropout is only valid for training.
-          use_dropout=use_dropout and mode == tf.estimator.ModeKeys.TRAIN,
+          use_dropout=(dropout & 4) > 0 and train_mode,
           dropout_rate=dropout_rate)
       debug("fc1_layer shape", fc1_layer.shape)
 
@@ -203,7 +205,7 @@ def build_model(
           num_inputs=fc1_size,
           num_outputs=num_classes,
           use_relu=False,
-          use_dropout=False)
+          use_dropout=(dropout & 8) > 0 and train_mode)
       debug("fc2_layer shape", fc2_layer.shape)
 
     logits = fc2_layer
