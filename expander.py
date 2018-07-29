@@ -111,7 +111,7 @@ def elastic_transform(image):
   im = pil_to_opencv_image(image)
   im = do_elastic_transform(
       im,
-      alpha=im.shape[1] * 0.75,
+      alpha=im.shape[1] * 0.4,
       sigma=im.shape[1] * 0.04,
       alpha_affine=im.shape[1] * 0.025)
   return opencv_to_pil_image(im)
@@ -123,11 +123,9 @@ def expander(sample, factor):
 
   for i in range(factor):
     new_image = image.transformed(elastic_transform)
-    # new_image.image.show()
-    # input("next? ")
     yield (new_image, label)
 
 
 if __name__ == '__main__':
-  elastic_transform(PilImage.open("./grid.png")).show()
-  elastic_transform(PilImage.open("./data/common-6/crying-face/00.png")).show()
+  elastic_transform(PilImage.open("./data/grid.png")).show()
+  elastic_transform(PilImage.open("./data/sample-image.png")).show()

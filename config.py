@@ -52,7 +52,7 @@ def parse_config(description="Run operations on the model"):
   parser.add_argument(
       "--image-size",
       type=int,
-      default=64,
+      default=24,
       help="The target width/height of each image as input to the model")
   parser.add_argument(
       "--random-seed",

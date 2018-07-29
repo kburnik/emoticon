@@ -5,13 +5,15 @@ Loads the bootstrapped solution and runs the training.
 """
 
 from expander import expander
+from solution import args
 from solution import data
 from solution import data_set
 from solution import model
 from solution import test
 from solution import train
-from solution import args
 from visual import display_data_detached
+import json
+import os
 
 train_expanded = train.expanded(expander).shuffled()
 
@@ -24,6 +26,12 @@ print("Data size: train [ %d ] train_expanded [ %d ] test [ %d ]" % (
 
 if args.show_data:
   display_data_detached(train_expanded, test)
+
+# Store the used training configuration.
+if not os.path.exists(args.model_dir):
+  os.makedirs(args.model_dir, 0o755)
+with open(os.path.join(args.model_dir, 'config.json'), 'w') as f:
+  json.dump(args.__dict__, f, indent=2)
 
 i = 0
 while True:

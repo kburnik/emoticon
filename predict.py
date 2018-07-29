@@ -64,9 +64,18 @@ def observe(data_set, data, predictions):
 
 
 def generate_report(data_set, data_prediction_pairs, config):
+  train_config_filename = os.path.join(config.model_dir, 'config.json')
+  train_config = {}
+  if os.path.exists(train_config_filename):
+    with open(train_config_filename) as f:
+      train_config = json.load(f)
   report = {
+    'id': time.strftime('%Y-%m-%d-%H%M%S'),
     'data_set': data_set.info(),
-    'config': config.__dict__,
+    'config': {
+      'predict': config.__dict__,
+      'train': train_config
+    },
     'observations': []
   }
   for data, predictions in data_prediction_pairs:
@@ -78,7 +87,7 @@ def generate_report(data_set, data_prediction_pairs, config):
 def save_report(report):
   if not os.path.exists(REPORT_DIR):
     os.makedirs(REPORT_DIR, 0o755)
-  report_basename = time.strftime('%Y-%m-%d-%H%M%S') + '.json'
+  report_basename = report['id'] + '.json'
   report_filename = os.path.join(REPORT_DIR, report_basename)
   with open(report_filename, 'w') as f:
     json.dump(report, f, indent=2)
