@@ -26,3 +26,9 @@ class Reports:
     filename = os.path.join(REPORT_DIR, name + '.json')
     with open(filename, 'r') as f:
       return json.load(f)
+
+  @staticmethod
+  def all():
+    """Streams all the reports."""
+    for name in Reports.names():
+      yield Reports.load_by_name(name)

@@ -1,5 +1,21 @@
-{% for name in reports %}
-<ul class='nav'>
-  <li class='nav-item'><a href='/report/{{name}}'>{{name}}</a></li>
-</ul>
-{% endfor %}
+
+<table class='table table-striped'>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Model</th>
+      <th>Data set</th>
+      <th>Test Score</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for report in reports %}
+    <tr>
+      <td><a href='/report/{{report.id}}'>{{report.id}}</a></td>
+      <td>{{report.config.model_dir}}</td>
+      <td>{{report.data_set.name}}</td>
+      <td nowrap>{{report.observations[2].summary.display}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

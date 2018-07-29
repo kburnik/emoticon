@@ -20,7 +20,7 @@ def index():
   return render_template(
       'index.html',
       datasets=DataPath.names(),
-      reports=Reports.names()
+      reports=Reports.all()
       )
 
 
@@ -47,7 +47,7 @@ def dataset_single(name):
 def reports():
   return render_template(
       'reports.html',
-      reports=Reports.names())
+      reports=Reports.all())
 
 
 @app.route('/report/<name>')
