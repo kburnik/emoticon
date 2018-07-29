@@ -8,7 +8,7 @@ class Reports:
   @staticmethod
   def paths():
     """Returns all the report paths."""
-    return glob(os.path.join(REPORT_DIR, '*.json'))
+    return list(reversed(glob(os.path.join(REPORT_DIR, '*.json'))))
 
   @staticmethod
   def basenames():

@@ -154,7 +154,7 @@ def build_model(
           num_input_channels=num_channels,
           filter_size=filter_size1,
           num_filters=num_filters1,
-          use_pooling=use_pooling,
+          use_pooling=False,
           filter_stride=filter_stride1,
           pool_stride=pool_stride1,
           use_dropout=False,
