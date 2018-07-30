@@ -10,6 +10,15 @@ from visual import get_conv_output_image
 from math import sqrt
 from math import floor
 
+
+class Model:
+  """Wraps a built model"""
+  def __init__(self, convolutional, fully_connected, logits):
+    self.convolutional = convolutional
+    self.fully_connected = fully_connected
+    self.logits = logits
+
+
 def noop(*args):
   """Stand-in method for handling debug info."""
   pass
@@ -142,6 +151,7 @@ def build_model(
 
     # Fully-connected layers.
     fc1_size = num_classes * 16
+    fc2_size = num_classes * 8
 
     data = features['x']
 
@@ -203,33 +213,41 @@ def build_model(
       fc2_layer, fc2_weights, fc2_biases = new_fc_layer(
           input=fc1_layer,
           num_inputs=fc1_size,
-          num_outputs=num_classes,
+          num_outputs=fc2_size,
           use_relu=False,
           use_dropout=(dropout & 8) > 0 and train_mode)
       debug("fc2_layer shape", fc2_layer.shape)
 
+    with tf.name_scope("Fully-connected-3"):
+      fc3_layer, fc3_weights, fc3_biases = new_fc_layer(
+          input=fc2_layer,
+          num_inputs=fc2_size,
+          num_outputs=num_classes,
+          use_relu=False,
+          use_dropout=(dropout & 16) > 0 and train_mode)
+      debug("fc3_layer shape", fc3_layer.shape)
+
     logits = fc2_layer
 
-    return (
-        conv1_weights, conv1_biases,
-        conv2_weights, conv2_biases,
-        fc1_weights, fc1_biases,
-        fc2_weights, fc2_biases,
-        logits,
-        )
-
+    return Model(
+        convolutional=[
+          (conv1_weights, conv1_biases),
+          (conv2_weights, conv2_biases),
+        ],
+        fully_connected=[
+          (fc1_weights, fc1_biases),
+          (fc2_weights, fc2_biases),
+          (fc3_weights, fc3_biases),
+        ],
+        logits=logits)
 
   def model_fn(features, labels, mode):
     # Build the neural network.
     with tf.name_scope('Model'):
-      conv1_weights, conv1_biases, \
-          conv2_weights, conv2_biases, \
-          fc1_weights, fc1_biases, \
-          fc2_weights, fc2_biases, \
-          logits = build_neural_net(features, mode)
+      model = build_neural_net(features, mode)
 
       # Predictions.
-      pred_classes = tf.argmax(logits, axis=1)
+      pred_classes = tf.argmax(model.logits, axis=1)
 
     # In prediction mode we can return the model with predictions.
     if mode == tf.estimator.ModeKeys.PREDICT:
@@ -241,41 +259,33 @@ def build_model(
     with tf.name_scope('Loss'):
       logits_loss = tf.reduce_mean(
           tf.nn.sparse_softmax_cross_entropy_with_logits(
-              logits=logits,
+              logits=model.logits,
               labels=labels))
 
-      conv1_weights_loss = tf.nn.l2_loss(conv1_weights)
-      conv1_biases_loss = tf.nn.l2_loss(conv1_biases)
-      conv2_weights_loss = tf.nn.l2_loss(conv2_weights)
-      conv2_biases_loss = tf.nn.l2_loss(conv2_biases)
-      conv_regularizers = (
-          conv1_weights_loss + conv1_biases_loss +
-          conv2_weights_loss + conv2_biases_loss)
-
-      fc1_weights_loss = tf.nn.l2_loss(fc1_weights)
-      fc1_biases_loss = tf.nn.l2_loss(fc1_biases)
-      fc2_weights_loss = tf.nn.l2_loss(fc2_weights)
-      fc2_biases_loss = tf.nn.l2_loss(fc2_biases)
-      fc_regularizers = (
-          fc1_weights_loss + fc1_biases_loss +
-          fc2_weights_loss + fc2_biases_loss)
-
-      # Add the regularization terms to the loss.
-      loss_op = logits_loss + 0.1 * conv_regularizers + 0.1 * fc_regularizers
-
-      # Export scalars for loss.
-      tf.summary.scalar("conv1_weights", conv1_weights_loss)
-      tf.summary.scalar("conv1_biases", conv1_biases_loss)
-      tf.summary.scalar("conv2_weights", conv1_weights_loss)
-      tf.summary.scalar("conv2_biases", conv1_biases_loss)
+      # Regularization term for convolutional layers.
+      conv_regularizers = tf.Variable()
+      for i, conv in enumerate(model.convolutional):
+        weights, biases = conv
+        weights_loss = tf.nn.l2loss(weights)
+        biases_loss = tf.nn.l2loss(biases)
+        tf.summary.scalar("conv%d_weights" % (i + 1), weights_loss)
+        tf.summary.scalar("conv%d_biases" % (i + 1), biases_loss)
+        conv_regularizers += weights_loss + biases_loss
       tf.summary.scalar("conv_regularizers", conv_regularizers)
 
-      tf.summary.scalar("fc1_weights", fc1_weights_loss)
-      tf.summary.scalar("fc1_biases", fc1_biases_loss)
-      tf.summary.scalar("fc2_weights", fc2_weights_loss)
-      tf.summary.scalar("fc2_biases", fc2_biases_loss)
+      # Regularization terms for fully-connected layers.
+      fc_regularizers = tf.Variable()
+      for i, fc in enumerate(model.fully_connected):
+        weights, biases = fc
+        weights_loss = tf.nn.l2loss(weights)
+        biases_loss = tf.nn.l2loss(biases)
+        tf.summary.scalar("fc%d_weights" % (i + 1), weights_loss)
+        tf.summary.scalar("fc%d_biases" % (i + 1), biases_loss)
+        fc_regularizers += weights_loss + biases_loss
       tf.summary.scalar("fc_regularizers", fc_regularizers)
 
+      # Add the regularization terms to the loss.
+      loss_op = 0.25 * conv_regularizers + 0.5 * fc_regularizers + logits_loss
       tf.summary.scalar("logits", logits_loss)
       tf.summary.scalar("total", loss_op)
 
