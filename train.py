@@ -53,7 +53,7 @@ while True:
 
   evals = [train_eval, train_expanded_eval, test_eval]
   accuracy_stat = [e['accuracy'] for e in evals]
-  if accuracy_stat == last_accuracy_stat
+  if accuracy_stat == last_accuracy_stat:
     accuracy_stat_repeated += 1
   else:
     accuracy_stat_repeated = 0

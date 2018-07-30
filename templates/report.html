@@ -1,5 +1,5 @@
 {% extends "template.html" %}
-{% block title %}{{report.id}} report - {% endblock %}
+{% block title %}{{'%.2f' % (report.observations[2].summary.accuracy * 100)}}% - {{report.id}} report - {% endblock %}
 {% block main %}
 <h1>Report {{ report.id }}</h1>
 

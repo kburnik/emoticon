@@ -5,7 +5,7 @@
       <th>ID</th>
       <th>Model</th>
       <th>Data set</th>
-      <th>Test Score</th>
+      <th>Test score</th>
     </tr>
   </thead>
   <tbody>
@@ -14,7 +14,11 @@
       <td><a href='/report/{{report.id}}'>{{report.id}}</a></td>
       <td>{{report.config.predict.model_dir}}</td>
       <td>{{report.data_set.name}}</td>
-      <td nowrap>{{report.observations[2].summary.display}}</td>
+      <td nowrap>
+        <strong class='text-success'>
+        {{report.observations[2].summary.display}}
+        </strong>
+      </td>
     </tr>
     {% endfor %}
   </tbody>
