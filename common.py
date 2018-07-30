@@ -49,6 +49,12 @@ class DataPath:
   COMMON_6_EXTENDED = data_dir("common-6-extended")
   """Merged images from emojipedia.org and unicode.org across 6 common types."""
 
+  COMMON_6_EXTRA = data_dir("common-6-extra")
+  """
+  Merged images from emojipedia.org, unicode.org and Google search across 6
+  common types.
+  """
+
   COMMON_6_GRAYSCALE = data_dir("common-6-grayscale")
   """Picked out images for common emoticons (grayscale)."""
 
