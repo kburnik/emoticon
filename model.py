@@ -263,25 +263,25 @@ def build_model(
               labels=labels))
 
       # Regularization term for convolutional layers.
-      conv_regularizers = tf.Variable()
+      conv_regularizers = tf.Variable(0, name='conv_reg', dtype=tf.float32)
       for i, conv in enumerate(model.convolutional):
         weights, biases = conv
-        weights_loss = tf.nn.l2loss(weights)
-        biases_loss = tf.nn.l2loss(biases)
+        weights_loss = tf.nn.l2_loss(weights)
+        biases_loss = tf.nn.l2_loss(biases)
         tf.summary.scalar("conv%d_weights" % (i + 1), weights_loss)
         tf.summary.scalar("conv%d_biases" % (i + 1), biases_loss)
-        conv_regularizers += weights_loss + biases_loss
+        conv_regularizers.assign_add(weights_loss + biases_loss)
       tf.summary.scalar("conv_regularizers", conv_regularizers)
 
       # Regularization terms for fully-connected layers.
-      fc_regularizers = tf.Variable()
+      fc_regularizers = tf.Variable(0, name='fc_reg', dtype=tf.float32)
       for i, fc in enumerate(model.fully_connected):
         weights, biases = fc
-        weights_loss = tf.nn.l2loss(weights)
-        biases_loss = tf.nn.l2loss(biases)
+        weights_loss = tf.nn.l2_loss(weights)
+        biases_loss = tf.nn.l2_loss(biases)
         tf.summary.scalar("fc%d_weights" % (i + 1), weights_loss)
         tf.summary.scalar("fc%d_biases" % (i + 1), biases_loss)
-        fc_regularizers += weights_loss + biases_loss
+        fc_regularizers.assign_add(weights_loss + biases_loss)
       tf.summary.scalar("fc_regularizers", fc_regularizers)
 
       # Add the regularization terms to the loss.
@@ -297,9 +297,9 @@ def build_model(
       tf.summary.scalar("acc1", accuracy_op[1])
 
     summary_hook = tf.train.SummarySaverHook(
-      save_steps=100,
-      output_dir='logdir',
-      summary_op=tf.summary.merge_all())
+        save_steps=100,
+        output_dir='logdir',
+        summary_op=tf.summary.merge_all())
 
     # If running in eval mode, we can stop here.
     if mode == tf.estimator.ModeKeys.EVAL:
