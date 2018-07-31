@@ -146,6 +146,13 @@ def parse_config(description="Run operations on the model"):
       const=True,
       default=False,
       help="Whether to print out the used data hash")
+  parser.add_argument(
+      "--show-config",
+      type=str2bool,
+      nargs='?',
+      const=True,
+      default=False,
+      help="Whether to print out the used configuration")
 
   # Merge with training model's config as defaults.
   model_dir = parser.parse_known_args()[0].model_dir
@@ -156,7 +163,10 @@ def parse_config(description="Run operations on the model"):
       parser.set_defaults(**train_args_dict)
       print('Using defaults from training config')
 
-  return parser.parse_args()
+  args = parser.parse_args()
+  if args.show_config:
+    print(json.dumps(args.__dict__, indent=2))
+  return args
 
 
 class Unbuffered(object):
