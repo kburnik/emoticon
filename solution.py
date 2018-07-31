@@ -15,6 +15,7 @@ args = parse_config()
 
 ds_config = DataSetConfig(
     num_channels=args.num_channels,
+    monochrome=args.monochrome,
     batch_size=args.batch_size,
     expansion_factor=args.expansion_factor,
     image_size=(args.image_size, args.image_size),
@@ -32,12 +33,11 @@ data = data_set.data().shuffled()
 train, test = data.split(args.split_ratio, names=["train", "test"])
 
 model = build_model(
-    ds_config,
+    # Dataset.
+    ds_config=ds_config,
+
+    # Input.
     num_classes=num_classes,
-    dropout=args.dropout,
-    pooling=args.pooling,
-    dropout_rate=args.dropout_rate,
-    filter_size=args.filter_size,
-    learning_rate=args.learning_rate,
-    momentum=args.momentum,
-    save_dir=args.model_dir)
+
+    # Options from flags.
+    args=args)

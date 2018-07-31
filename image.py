@@ -51,7 +51,7 @@ class Image:
     return self.path[len(ROOT_DIR):].replace('\\', '/')
 
   @lru_cache(maxsize=None)
-  def read(self, image_size, num_channels):
+  def read(self, image_size, num_channels, monochrome=False):
     """Reads and resizes the image as RGB."""
     if num_channels not in set([1, 3]):
       raise Exception("Supporting only 1 or 3 channel images")
@@ -66,6 +66,12 @@ class Image:
       background = PilImage.new("RGB", image_size, (255, 255, 255))
       background.paste(im, mask=im.split()[3]) # 3 is the alpha channel
       im = background
+
+    # TODO: Refactor as a filter and on the dataset control level.
+    if monochrome:
+      im = im.convert('L')
+      im = im.point(lambda x: 0 if x < 128 else 255, '1')
+      im = im.convert('RGB')
 
     if num_channels == 1:
       im = im.convert('L')
@@ -117,5 +123,4 @@ class Image:
     return im
 
   def __repr__(self):
-    return "Image<%s/%s [%dx%d]>" % (
-        self.label_name, self.name, self.size[0], self.size[1])
+    return "Image<%s/%s>" % (self.label_name, self.name)

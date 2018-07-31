@@ -25,11 +25,13 @@ class DataSetConfig:
   def __init__(
       self,
       num_channels=3,
+      monochrome=False,
       batch_size=8,
       image_size=(32, 32),
       expansion_factor=10,
       random_seed=None):
     self.num_channels = num_channels
+    self.monochrome = monochrome
     self.batch_size = batch_size
     self.image_size = image_size
     self.random_seed = random_seed
@@ -103,7 +105,8 @@ class Data:
     for i in range(self.size):
       image = self.samples[i][0].read(
           image_size=self.config.image_size,
-          num_channels=self.config.num_channels)
+          num_channels=self.config.num_channels,
+          monochrome=self.config.monochrome)
       image_vector = np.asarray(image).reshape(
           *image.size,
           self.config.num_channels)

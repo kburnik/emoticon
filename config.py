@@ -1,5 +1,6 @@
 from collections import namedtuple
 from common import DataPath
+from common import LOG_DIR
 from common import MODEL_SAVE_DIR
 import argparse
 import json
@@ -20,12 +21,17 @@ def parse_config(description="Run operations on the model"):
   """Parses the configuration from command-line arguments."""
   parser = argparse.ArgumentParser(description=description)
 
-  # Model output.
+  # Model and debug output.
   parser.add_argument(
       "--model-dir",
       type=str,
       default=MODEL_SAVE_DIR,
-      help="Saved model location")
+      help="Saved model path")
+  parser.add_argument(
+      "--log-dir",
+      type=str,
+      default=LOG_DIR,
+      help="Tensorboard logs path")
 
   # Data set selection.
   parser.add_argument(
@@ -41,6 +47,13 @@ def parse_config(description="Run operations on the model"):
       type=int,
       default=3,
       help="Number of channels in each image (e.g. RGB = 3)")
+  parser.add_argument(
+      "--monochrome",
+      type=str2bool,
+      nargs='?',
+      const=True,
+      default=False,
+      help="Whether to apply a monochrome filter on images")
   parser.add_argument(
       "--batch-size",
       type=int,
@@ -68,45 +81,48 @@ def parse_config(description="Run operations on the model"):
       type=float,
       default=0.6,
       help="The train/test split ratio")
-
-  parser.add_argument(
-      "--dropout",
-      type=int,
-      default=4,
-      help="Dropout, bitwise [fc2][fc1][conv2][conv1]. 0 = none, 15 = all")
-
-  parser.add_argument(
-      "--pooling",
-      type=int,
-      default=3,
-      help="Max-pooling, bitwise: [conv2][conv1]; 0 = none, 3 = all")
-
-  parser.add_argument(
-      "--filter-size",
-      type=int,
-      default=8,
-      help="Convolution filter size")
-
-  parser.add_argument(
-      "--dropout-rate",
-      type=float,
-      default=0.5,
-      help="The dropout probability in the model")
-  parser.add_argument(
-      "--learning-rate",
-      type=float,
-      default=0.01,
-      help="The training learning rate for MomentumOptimizer")
   parser.add_argument(
       "--momentum",
       type=float,
       default=0.6,
       help="The training momentum for MomentumOptimizer")
   parser.add_argument(
+      "--learning-rate",
+      type=float,
+      default=0.01,
+      help="The training learning rate for MomentumOptimizer")
+  parser.add_argument(
       "--training-steps",
       type=int,
       default=100,
       help="Number of steps in each training iteration")
+
+  # Layers.
+  parser.add_argument(
+      "--filter-size",
+      type=int,
+      default=8,
+      help="Convolution filter size")
+  parser.add_argument(
+      "--pooling",
+      type=int,
+      default=0b00011,
+      help="Max-pooling, bitwise: [conv2][conv1]; 0 = none, 3 = all")
+  parser.add_argument(
+      "--relu",
+      type=int,
+      default=0b01100,
+      help="ReLU, bitwise: [fc2][fc1][conv2][conv1]; 0 = none, 15 = all")
+  parser.add_argument(
+      "--dropout",
+      type=int,
+      default=0b00100,
+      help="Dropout, bitwise [fc3][fc2][fc1][conv2][conv1]. 0 = none, 15 = all")
+  parser.add_argument(
+      "--dropout-rate",
+      type=float,
+      default=0.5,
+      help="The dropout probability in the model")
 
   # Visualization and debugging.
   parser.add_argument(

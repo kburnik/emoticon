@@ -13,6 +13,9 @@ DATA_ROOT_DIR = os.path.join(ROOT_DIR, "data")
 MODEL_SAVE_DIR = os.path.join(ROOT_DIR, ".model")
 """Directory where the models are cached."""
 
+LOG_DIR = os.path.join(ROOT_DIR, ".model", "logdir")
+"""Directory where the tensorboard logs are stored."""
+
 REPORT_DIR = os.path.join(ROOT_DIR, "reports")
 """Directory for storing prediction reports."""
 
