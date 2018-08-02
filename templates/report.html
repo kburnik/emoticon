@@ -57,8 +57,8 @@
           {% for label_samples_image in label_samples_images %}
           <th><img
               src='{{label_samples_image}}'
-              width='32'
-              height='32'></th>
+              width='24'
+              height='24'></th>
           {% endfor %}
         </tr>
       </thead>
@@ -68,8 +68,8 @@
         <tr>
           <th><img
                   src='{{label_samples_images[i]}}'
-                  width='32'
-                  height='32'></th>
+                  width='24'
+                  height='24'></th>
           {% for err in row %}
           {% set j = loop.index - 1 %}
           <td>

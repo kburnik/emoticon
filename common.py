@@ -61,6 +61,18 @@ class DataPath:
   common types.
   """
 
+  COMMON_6_EXTRA_WITH_NOISE = data_dir("common-6-extra-with-noise")
+  """Same as common-6-extra with extra 3 noise classes."""
+
+  COMMON_6_EXTRA_WITH_MIXED_NOISE = data_dir("common-6-extra-with-mixed-noise")
+  """Same as common-6-extra with an extra noise class (blank+circle+noise)."""
+
+  COMMON_6_EXTRA_WITH_PURE_NOISE = data_dir("common-6-extra-with-pure-noise")
+  """Same as common-6-extra with an extra noise class (pure noise)."""
+
+  COMMON_6_EXTRA_WITH_CIRCLE = data_dir("common-6-extra-with-circle")
+  """Same as common-6-extra with an extra noise class (circle)."""
+
   COMMON_6_GRAYSCALE = data_dir("common-6-grayscale")
   """Picked out images for common emoticons (grayscale)."""
 
