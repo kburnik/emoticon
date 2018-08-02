@@ -34,11 +34,17 @@ def observe(data_set, data, predictions):
   }
   total = 0
   matched = 0
+  noise_labels = set([
+      'noise', 'circle', 'blank', '-circle', '-mixed-noise', '-pure-noise'
+      ])
   for i, sample in enumerate(data.samples):
     image, label = sample
     actual_index = label.index
     predicted_index = int(predictions[i])
     predicted_label = data_set.label_set.labels()[predicted_index]
+    actual_label = data_set.label_set.labels()[actual_index]
+    predicted_is_noise = predicted_label.name in noise_labels
+    actual_is_noise = actual_label.name in noise_labels
     observation = {
       'image': image.rel_path,
       'actual': label.name,
@@ -46,7 +52,8 @@ def observe(data_set, data, predictions):
       'matched': predicted_index == actual_index
     }
     total += 1
-    if predicted_index == actual_index:
+    if ((predicted_index == actual_index) or
+        (predicted_is_noise and actual_is_noise)):
       matched += 1
     else:
       report['errors'].append(observation)
