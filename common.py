@@ -34,6 +34,9 @@ class DataPath:
   SIMPLE = data_dir("simple")
   """Picked out images for a simple data set - debugging."""
 
+  NOISE_DATA = data_dir("noise-data")
+  """Generated noise, circles and blank colors - debugging."""
+
   COMMON_3 = data_dir("common-3")
   """Picked out images for common emoticons."""
 
