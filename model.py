@@ -254,16 +254,6 @@ def build_model(
           name='fc1')
       debug("fc1_layer shape", fc1.layer.shape)
 
-    # with tf.name_scope("Fully-connected-2"):
-    #   fc2_layer, fc2_weights, fc2_biases = new_fc_layer(
-    #       input=fc1_layer,
-    #       num_inputs=fc1_size,
-    #       num_outputs=num_classes,
-    #       use_relu=(args.relu & 2) > 0,
-    #       use_dropout=(args.dropout & 8) > 0 and train_mode,
-    #       name='fc2')
-    #   debug("fc2_layer shape", fc2_layer.shape)
-
     with tf.name_scope("Fully-connected-2"):
       fc2 = new_fc_layer(
           input=fc1.layer,
